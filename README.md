@@ -4,9 +4,14 @@ Godot module adding support for SIMD instructions from gdscript etc.
 # About
 This is a proof of concept module for high performance coding from gdscript and other scripting languages.
 
-It adds a new class `FastArray_4f32`. This is an array made up of 4 32bit floats, corresponding to the `__m128` SSE type and `float32x4_t` in Neon.
+It adds a new class `FastArray_4f32`. This is an array made up of 4 32bit floats, corresponding to the `__m128` SSE type and `float32x4_t` in Neon. Instead of having a loop in gdscript and calling a function multiple times, instead here the math functions take a `from` and `to` argument to pass the array range to apply the function to. 
 
 You can use this array to perform basic math but considerably faster than gdscript would normally perform, I have profiled at approximately 400x faster.
+
+The speedup is due to:
+1) Linear ideally packed aligned layout in memory
+2) Designed for easy compiler optimization
+3) Autovectorization to SSE or Neon instructions where available
 
 # Example
 ```
@@ -31,3 +36,6 @@ func TestSIMD():
 		q = arr.read(i)
     # do something with q
 ```
+
+# Notes
+As yet some operations are not possible to autovectorize and require intrinsics. These both depend on the platform, and on the availability of the instructions on the running hardware, which must be tested at runtime.
