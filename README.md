@@ -13,6 +13,15 @@ The speedup is due to:
 2) Designed for easy compiler optimization
 3) Autovectorization to SSE or Neon instructions where available
 
+# Functions
+Functions include:
+* read / writing elements and reserving array
+* read / writing as pool arrays
+* add, subtract, multiply, divide
+* dot, cross, unit cross, normalize
+* length, length squared
+* sqrt, inverse sqrt, reciprocal
+
 # Example
 ```
 const size = 5000000
