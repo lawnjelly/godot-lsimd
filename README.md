@@ -28,22 +28,22 @@ const size = 5000000
 
 func TestSIMD():
 
-  # create SIMD array
+	# create SIMD array
 	var arr = FastArray_4f32.new()
 	arr.reserve(size)
 
-  # fill
+	# fill
 	for i in range (size):
 		arr.write(i, Quat(1, 1, 1, 1))
 
-  # perform SIMD function
+	# perform SIMD function
 	arr.value_add(Quat(1, 1, 1, 1), 0, size)
 
-  # read
-  var q : Quat
+	# read
+	var q : Quat
 	for i in range (size):
 		q = arr.read(i)
-    # do something with q
+		# do something with q
 ```
 
 # ToDo
