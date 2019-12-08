@@ -48,3 +48,5 @@ func TestSIMD():
 
 # Notes
 As yet some operations are not possible to autovectorize and require intrinsics. These both depend on the platform, and on the availability of the instructions on the running hardware, which must be tested at runtime.
+
+The module is not yet thread safe.
