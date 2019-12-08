@@ -18,9 +18,10 @@ Functions include:
 * read / writing elements and reserving array
 * read / writing as pool arrays
 * add, subtract, multiply, divide
-* dot, cross, unit cross, normalize
-* length, length squared
 * sqrt, inverse sqrt, reciprocal
+* vec3: dot, cross, unit cross, normalize
+* vec3: length, length squared
+* vec3: xform, inverse xform
 
 # Example
 ```
@@ -36,7 +37,7 @@ func TestSIMD():
 	for i in range (size):
 		arr.write(i, Quat(1, 1, 1, 1))
 
-	# perform SIMD function
+	# perform ranged function (single instruction, multiple data)
 	arr.value_add(Quat(1, 1, 1, 1), 0, size)
 
 	# read
