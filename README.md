@@ -28,7 +28,7 @@ func TestSIMD():
 		arr.write(i, Quat(1, 1, 1, 1))
 
   # perform SIMD function
-	arr.add(Quat(1, 1, 1, 1), 0, size)
+	arr.value_add(Quat(1, 1, 1, 1), 0, size)
 
   # read
   var q : Quat
