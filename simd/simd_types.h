@@ -52,6 +52,18 @@
 namespace GSimd
 {
 
+struct f32_transform
+{
+	float32_t basis[12];
+	float32_t origin[4];
+
+	void from_transform(const Transform &tr);
+
+	// pre-prepare inversed transform for fast inv_xform (basis and origin is different, see Transform source)
+	void from_transform_inv(const Transform &tr);
+};
+
+
 struct f32_4
 {
 	float32_t v[4];
@@ -80,12 +92,39 @@ struct f32_4
 			v[i] /= o.v[i];
 	}
 
-	void dot(const f32_4 &o)
+	void vec3_inv_xform(const f32_transform &tr)
+	{
+		f32_4 o;
+		o.v[0] = v[0] - tr.origin[0];
+		o.v[1] = v[1] - tr.origin[1];
+		o.v[2] = v[2] - tr.origin[2];
+
+		f32_4 t;
+		t.v[0] = (tr.basis[0] * o.v[0]) + (tr.basis[1] * o.v[1]) + (tr.basis[2] * o.v[2]);
+		t.v[1] = (tr.basis[4] * o.v[0]) + (tr.basis[5] * o.v[1]) + (tr.basis[6] * o.v[2]);
+		t.v[2] = (tr.basis[8] * o.v[0]) + (tr.basis[9] * o.v[1]) + (tr.basis[10] * o.v[2]);
+		t.v[3] = 0.0f;
+
+		*this = t;
+	}
+
+	void vec3_xform(const f32_transform &tr)
+	{
+		f32_4 t;
+		t.v[0] = (tr.basis[0] * v[0]) + (tr.basis[1] * v[1]) + (tr.basis[2] * v[2]) + tr.origin[0];
+		t.v[1] = (tr.basis[4] * v[0]) + (tr.basis[5] * v[1]) + (tr.basis[6] * v[2]) + tr.origin[1];
+		t.v[2] = (tr.basis[8] * v[0]) + (tr.basis[9] * v[1]) + (tr.basis[10] * v[2]) + tr.origin[2];
+		t.v[3] = 0.0f;
+
+		*this = t;
+	}
+
+	void vec3_dot(const f32_4 &o)
 	{
 		v[3] = (v[0] * o.v[0]) + (v[1] * o.v[1]) + (v[2] * o.v[2]);
 	}
 
-	void cross(const f32_4 &o)
+	void vec3_cross(const f32_4 &o)
 	{
 		f32_4 t;
 		t.v[0] = (v[1] * o.v[2]);
@@ -100,7 +139,7 @@ struct f32_4
 		*this = t;
 	}
 
-	void normalize()
+	void vec3_normalize()
 	{
 		float l_squared = (v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]);
 		if (l_squared == 0.0f)
@@ -120,12 +159,12 @@ struct f32_4
 		}
 	}
 
-	void length_squared()
+	void vec3_length_squared()
 	{
 		v[3] = (v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]);
 	}
 
-	void length()
+	void vec3_length()
 	{
 		float sl = (v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]);
 		v[3] = Math::sqrt(sl);

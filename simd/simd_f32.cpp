@@ -200,7 +200,7 @@ void FastArray_4f32::divide(Object * pArr2, int from, int to)
 		m_Vec[n].divide(p2->m_Vec[n]);
 }
 
-void FastArray_4f32::dot(Object * pArr2, int from, int to)
+void FastArray_4f32::vec3_dot(Object * pArr2, int from, int to)
 {
 	GSIMD_CHECK_RANGE
 
@@ -209,11 +209,36 @@ void FastArray_4f32::dot(Object * pArr2, int from, int to)
 		return; // not the right type
 
 	for (int n=from; n<to; n++)
-		m_Vec[n].dot(p2->m_Vec[n]);
+		m_Vec[n].vec3_dot(p2->m_Vec[n]);
 }
 
 
-void FastArray_4f32::unit_cross(Object * pArr2, int from, int to)
+void FastArray_4f32::vec3_inv_xform(const Transform &tr, int from, int to)
+{
+	GSIMD_CHECK_RANGE
+
+	f32_transform trans;
+	trans.from_transform_inv(tr);
+
+	for (int n=from; n<to; n++)
+		m_Vec[n].vec3_inv_xform(trans);
+
+}
+
+
+void FastArray_4f32::vec3_xform(const Transform &tr, int from, int to)
+{
+	GSIMD_CHECK_RANGE
+
+	f32_transform trans;
+	trans.from_transform(tr);
+
+	for (int n=from; n<to; n++)
+		m_Vec[n].vec3_xform(trans);
+}
+
+
+void FastArray_4f32::vec3_unit_cross(Object * pArr2, int from, int to)
 {
 	GSIMD_CHECK_RANGE
 	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
@@ -222,13 +247,13 @@ void FastArray_4f32::unit_cross(Object * pArr2, int from, int to)
 
 	for (int n=from; n<to; n++)
 	{
-		m_Vec[n].cross(p2->m_Vec[n]);
-		m_Vec[n].normalize();
+		m_Vec[n].vec3_cross(p2->m_Vec[n]);
+		m_Vec[n].vec3_normalize();
 	}
 
 }
 
-void FastArray_4f32::cross(Object * pArr2, int from, int to)
+void FastArray_4f32::vec3_cross(Object * pArr2, int from, int to)
 {
 	GSIMD_CHECK_RANGE
 	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
@@ -236,7 +261,7 @@ void FastArray_4f32::cross(Object * pArr2, int from, int to)
 		return; // not the right type
 
 	for (int n=from; n<to; n++)
-		m_Vec[n].cross(p2->m_Vec[n]);
+		m_Vec[n].vec3_cross(p2->m_Vec[n]);
 }
 
 
@@ -278,26 +303,26 @@ void FastArray_4f32::value_divide(const Quat &val, int from, int to)
 		m_Vec[n].divide(u);
 }
 
-void FastArray_4f32::length(int from, int to)
+void FastArray_4f32::vec3_length(int from, int to)
 {
 	GSIMD_CHECK_RANGE
 	for (int n=from; n<to; n++)
-		m_Vec[n].length();
+		m_Vec[n].vec3_length();
 }
 
-void FastArray_4f32::length_squared(int from, int to)
+void FastArray_4f32::vec3_length_squared(int from, int to)
 {
 	GSIMD_CHECK_RANGE
 	for (int n=from; n<to; n++)
-		m_Vec[n].length_squared();
+		m_Vec[n].vec3_length_squared();
 }
 
 
-void FastArray_4f32::normalize(int from, int to)
+void FastArray_4f32::vec3_normalize(int from, int to)
 {
 	GSIMD_CHECK_RANGE
 	for (int n=from; n<to; n++)
-		m_Vec[n].normalize();
+		m_Vec[n].vec3_normalize();
 }
 
 void FastArray_4f32::sqrt(int from, int to)
@@ -374,20 +399,21 @@ void FastArray_4f32::_bind_methods()
 	ClassDB::bind_method(D_METHOD("multiply", "array2", "from", "to"), &FastArray_4f32::multiply);
 	ClassDB::bind_method(D_METHOD("divide", "array2", "from", "to"), &FastArray_4f32::divide);
 
-	ClassDB::bind_method(D_METHOD("dot", "array2", "from", "to"), &FastArray_4f32::dot);
-	ClassDB::bind_method(D_METHOD("cross", "array2", "from", "to"), &FastArray_4f32::cross);
-	ClassDB::bind_method(D_METHOD("unit_cross", "array2", "from", "to"), &FastArray_4f32::unit_cross);
+	ClassDB::bind_method(D_METHOD("vec3_dot", "array2", "from", "to"), &FastArray_4f32::vec3_dot);
+	ClassDB::bind_method(D_METHOD("vec3_cross", "array2", "from", "to"), &FastArray_4f32::vec3_cross);
+	ClassDB::bind_method(D_METHOD("vec3_unit_cross", "array2", "from", "to"), &FastArray_4f32::vec3_unit_cross);
+	ClassDB::bind_method(D_METHOD("vec3_length", "from", "to"), &FastArray_4f32::vec3_length);
+	ClassDB::bind_method(D_METHOD("vec3_length_squared", "from", "to"), &FastArray_4f32::vec3_length_squared);
+	ClassDB::bind_method(D_METHOD("vec3_normalize", "from", "to"), &FastArray_4f32::vec3_normalize);
+	ClassDB::bind_method(D_METHOD("vec3_xform", "transform", "from", "to"), &FastArray_4f32::vec3_xform);
+	ClassDB::bind_method(D_METHOD("vec3_xform_inv", "transform", "from", "to"), &FastArray_4f32::vec3_inv_xform);
 
 	ClassDB::bind_method(D_METHOD("value_add", "value", "from", "to"), &FastArray_4f32::value_add);
 	ClassDB::bind_method(D_METHOD("value_subtract", "value", "from", "to"), &FastArray_4f32::value_subtract);
 	ClassDB::bind_method(D_METHOD("value_multiply", "value", "from", "to"), &FastArray_4f32::value_multiply);
 	ClassDB::bind_method(D_METHOD("value_divide", "value", "from", "to"), &FastArray_4f32::value_divide);
 
-	ClassDB::bind_method(D_METHOD("length", "from", "to"), &FastArray_4f32::length);
-	ClassDB::bind_method(D_METHOD("length_squared", "from", "to"), &FastArray_4f32::length_squared);
-
-	ClassDB::bind_method(D_METHOD("normalize", "from", "to"), &FastArray_4f32::normalize);
 	ClassDB::bind_method(D_METHOD("sqrt", "from", "to"), &FastArray_4f32::sqrt);
-	ClassDB::bind_method(D_METHOD("inv_sqrt", "from", "to"), &FastArray_4f32::inv_sqrt);
+	ClassDB::bind_method(D_METHOD("sqrt_inv", "from", "to"), &FastArray_4f32::inv_sqrt);
 	ClassDB::bind_method(D_METHOD("reciprocal", "from", "to"), &FastArray_4f32::reciprocal);
 }

@@ -78,13 +78,16 @@ public:
 	void divide(Object * pArr2, int from, int to);
 
 	// geometry
-	void dot(Object * pArr2, int from, int to);
-	void cross(Object * pArr2, int from, int to);
-	void unit_cross(Object * pArr2, int from, int to);
-	void normalize(int from, int to);
+	void vec3_dot(Object * pArr2, int from, int to);
+	void vec3_cross(Object * pArr2, int from, int to);
+	void vec3_unit_cross(Object * pArr2, int from, int to);
+	void vec3_normalize(int from, int to);
 
-	void length(int from, int to);
-	void length_squared(int from, int to);
+	void vec3_length(int from, int to);
+	void vec3_length_squared(int from, int to);
+
+	void vec3_xform(const Transform &tr, int from, int to);
+	void vec3_inv_xform(const Transform &tr, int from, int to);
 
 	void sqrt(int from, int to);
 	void inv_sqrt(int from, int to);
