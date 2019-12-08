@@ -1,5 +1,30 @@
 #pragma once
 
+//	Copyright (c) 2019 Lawnjelly
+
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+
+//	The above copyright notice and this permission notice shall be included in all
+//	copies or substantial portions of the Software.
+
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//	SOFTWARE.
+
+/**
+	@author lawnjelly <lawnjelly@gmail.com>
+*/
+
+
 #include "core/math/quat.h"
 
 #ifndef float32_t
@@ -21,6 +46,8 @@
 //#define GSIMD_NEON
 #endif
 
+// TODO:
+// Alignment
 
 namespace GSimd
 {
@@ -53,16 +80,67 @@ struct f32_4
 			v[i] /= o.v[i];
 	}
 
+	void dot(const f32_4 &o)
+	{
+		v[3] = (v[0] * o.v[0]) + (v[1] * o.v[1]) + (v[2] * o.v[2]);
+	}
+
+	void cross(const f32_4 &o)
+	{
+		f32_4 t;
+		t.v[0] = (v[1] * o.v[2]);
+		t.v[1] = (v[2] * o.v[0]);
+		t.v[2] = (v[0] * o.v[1]);
+
+		t.v[0] -= (v[2] * o.v[1]);
+		t.v[1] -= (v[0] * o.v[2]);
+		t.v[2] -= (v[1] * o.v[0]);
+
+		t.v[3] = 0.0f;
+		*this = t;
+	}
+
+	void normalize()
+	{
+		float l_squared = (v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]);
+		if (l_squared == 0.0f)
+		{
+			v[0] = v[1] = v[2] = v[3] = 0.0f;
+		}
+		else
+		{
+			float l = Math::sqrt(l_squared);
+
+			v[0] /= l;
+			v[1] /= l;
+			v[2] /= l;
+
+			// store the length in the free tuple, it can be useful
+			v[3] = l;
+		}
+	}
+
+	void length_squared()
+	{
+		v[3] = (v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]);
+	}
+
+	void length()
+	{
+		float sl = (v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]);
+		v[3] = Math::sqrt(sl);
+	}
+
 	void sqrt()
 	{
 		for (int i=0; i<4; i++)
-			v[i] = ::sqrt(v[i]);
+			v[i] = Math::sqrt(v[i]);
 	}
 
 	void inv_sqrt()
 	{
 		for (int i=0; i<4; i++)
-			v[i] = 1.0f / ::sqrt(v[i]);
+			v[i] = 1.0f / Math::sqrt(v[i]);
 	}
 
 	void reciprocal()
