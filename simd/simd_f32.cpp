@@ -58,8 +58,8 @@ bool FastArray_4f32::check_range(int from, int to) const
 {
 	int size = m_Vec.size();
 	// check for below zero at same time
-	if ((unsigned int) from >= size) goto failed;
-	if ((unsigned int) to >= size) goto failed;
+	if ((unsigned int) from > size) goto failed;
+	if ((unsigned int) to > size) goto failed;
 	return true;
 
 failed:
