@@ -6,12 +6,15 @@ This is a proof of concept module for high performance coding from gdscript and 
 
 It adds a new class `FastArray_4f32`. This is an array made up of 4 32bit floats, corresponding to the `__m128` SSE type and `float32x4_t` in Neon. Instead of having a loop in gdscript and calling a function multiple times, instead here the math functions take a `from` and `to` argument to pass the array range to apply the function to. 
 
-You can use this array to perform basic math but considerably faster than gdscript would normally perform, I have profiled at approximately 400x faster.
+You can use this array to perform basic math but considerably faster than gdscript would normally perform, I have profiled at usually between 100x and 1000x faster.
 
 The speedup is due to:
 1) Linear ideally packed aligned layout in memory
 2) Designed for easy compiler optimization
 3) Autovectorization to SSE or Neon instructions where available
+
+# ToDo
+I have started making optional SSE versions of the functions. There is CPU detection code to detect CPU caps at startup, and dynamic dispatch to the fastest path supported by the hardware. The SSE code can be compiled out by switching out defines.
 
 # Functions
 Functions include:
@@ -53,4 +56,4 @@ func TestSIMD():
 * Strided generic versions of functions (for use on external arrays)
 
 # Notes
-As yet some operations are not possible to autovectorize and require intrinsics. These both depend on the platform, and on the availability of the instructions on the running hardware, which must be tested at runtime.
+As yet some operations are difficult / impossible to autovectorize and require compiling without disabling intrinsics for maximum speed. These include sqrt, inverse sqrt and operations which depend on these.
