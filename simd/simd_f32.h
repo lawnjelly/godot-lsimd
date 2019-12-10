@@ -34,6 +34,7 @@
 class FastArray_4f32: public Reference
 {
     GDCLASS(FastArray_4f32, Reference);
+
 public:
 	FastArray_4f32();
 
@@ -93,12 +94,15 @@ public:
 	void inv_sqrt(int from, int to);
 	void reciprocal(int from, int to);
 
+	void test(int from, int to);
+
 protected:
 	static void _bind_methods();
 	
 private:
 	bool check_range(int from, int to) const;
 
+public:
 	GSimd::SVector<GSimd::f32_4> m_Vec;
 
 };

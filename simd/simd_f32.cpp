@@ -22,11 +22,32 @@
 #include "simd_f32.h"
 #include "core/variant.h"
 #include <string.h>
+#include "simd_f32_sse.h"
+#include "simd_f32_sse3.h"
 
 
-#ifdef GSIMD_SSE
-#include <xmmintrin.h>
-#endif
+//#ifdef GSIMD_USE_SSE
+//#include <xmmintrin.h>
+//#endif
+//#ifdef GSIMD_USE_SSE2
+//#include <emmintrin.h>
+//#endif
+//#ifdef GSIMD_USE_SSE3
+//#include <pmmintrin.h>
+//#endif
+//#ifdef GSIMD_USE_SSSE3
+//#include <tmmintrin.h>
+//#endif
+//#ifdef GSIMD_USE_SSE4_1
+//#include <smmintrin.h>
+//#endif
+//#ifdef GSIMD_USE_SSE4_2
+//#include <nmmintrin.h>
+//#endif
+//#if defined GSIMD_USE_AVX || defined GSIMD_USE_AVX512
+//#include <immintrin.h>
+//#endif
+
 
 using namespace GSimd;
 
@@ -162,7 +183,13 @@ void FastArray_4f32::add(Object * pArr2, int from, int to)
 	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
 	if (!p2)
 		return; // not the right type
-
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::add((float *) &m_Vec[from], (float *) &p2->m_Vec[from], to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].add(p2->m_Vec[n]);
 }
@@ -173,7 +200,13 @@ void FastArray_4f32::subtract(Object * pArr2, int from, int to)
 	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
 	if (!p2)
 		return; // not the right type
-
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::subtract((float *) &m_Vec[from], (float *) &p2->m_Vec[from], to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].subtract(p2->m_Vec[n]);
 }
@@ -184,7 +217,13 @@ void FastArray_4f32::multiply(Object * pArr2, int from, int to)
 	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
 	if (!p2)
 		return; // not the right type
-
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::multiply((float *) &m_Vec[from], (float *) &p2->m_Vec[from], to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].multiply(p2->m_Vec[n]);
 }
@@ -195,7 +234,13 @@ void FastArray_4f32::divide(Object * pArr2, int from, int to)
 	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
 	if (!p2)
 		return; // not the right type
-
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::divide((float *) &m_Vec[from], (float *) &p2->m_Vec[from], to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].divide(p2->m_Vec[n]);
 }
@@ -203,10 +248,28 @@ void FastArray_4f32::divide(Object * pArr2, int from, int to)
 void FastArray_4f32::vec3_dot(Object * pArr2, int from, int to)
 {
 	GSIMD_CHECK_RANGE
-
 	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
 	if (!p2)
 		return; // not the right type
+
+#ifdef GSIMD_USE_SSE4_1
+//	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+//	{
+//		float * pf = (float *) &m_Vec[from];
+//		float * pf2 = (float *) &p2->m_Vec[from];
+
+//		for (int n=from; n<to; n++)
+//		{
+//			__m128 m = _mm_loadu_ps(pf);
+//			__m128 m2 = _mm_loadu_ps(pf2);
+//			__m128 res = _mm_div_ps(m, m2);
+//			_mm_storeu_ps(pf, res);
+//			pf += 4;
+//			pf2 += 4;
+//		}
+//		return;
+//	}
+#endif
 
 	for (int n=from; n<to; n++)
 		m_Vec[n].vec3_dot(p2->m_Vec[n]);
@@ -271,7 +334,13 @@ void FastArray_4f32::value_add(const Quat &val, int from, int to)
 	GSIMD_CHECK_RANGE
 	f32_4 u;
 	u.from_quat(val);
-
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::value_add((float *) &m_Vec[from], (float *) &u, to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].add(u);
 }
@@ -281,6 +350,13 @@ void FastArray_4f32::value_subtract(const Quat &val, int from, int to)
 	GSIMD_CHECK_RANGE
 	f32_4 u;
 	u.from_quat(val);
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::value_subtract((float *) &m_Vec[from], (float *) &u, to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].subtract(u);
 }
@@ -290,6 +366,13 @@ void FastArray_4f32::value_multiply(const Quat &val, int from, int to)
 	GSIMD_CHECK_RANGE
 	f32_4 u;
 	u.from_quat(val);
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::value_multiply((float *) &m_Vec[from], (float *) &u, to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].multiply(u);
 }
@@ -299,6 +382,13 @@ void FastArray_4f32::value_divide(const Quat &val, int from, int to)
 	GSIMD_CHECK_RANGE
 	f32_4 u;
 	u.from_quat(val);
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::value_divide((float *) &m_Vec[from], (float *) &u, to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].divide(u);
 }
@@ -306,6 +396,13 @@ void FastArray_4f32::value_divide(const Quat &val, int from, int to)
 void FastArray_4f32::vec3_length(int from, int to)
 {
 	GSIMD_CHECK_RANGE
+#ifdef GSIMD_USE_SSE3
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE3))
+	{
+		FastArray_4f32_SSE3::vec3_length((float *) &m_Vec[from], to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].vec3_length();
 }
@@ -313,6 +410,13 @@ void FastArray_4f32::vec3_length(int from, int to)
 void FastArray_4f32::vec3_length_squared(int from, int to)
 {
 	GSIMD_CHECK_RANGE
+#ifdef GSIMD_USE_SSE3
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE3))
+	{
+		FastArray_4f32_SSE3::vec3_length_squared((float *) &m_Vec[from], to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].vec3_length_squared();
 }
@@ -325,9 +429,38 @@ void FastArray_4f32::vec3_normalize(int from, int to)
 		m_Vec[n].vec3_normalize();
 }
 
+void FastArray_4f32::test(int from, int to)
+{
+	GSIMD_CHECK_RANGE
+//#ifdef GSIMD_USE_SSE
+//	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+//	{
+//		float * pf = (float *) &m_Vec[from];
+
+//		for (int n=from; n<to; n++)
+//		{
+//			__m128 m = _mm_loadu_ps(pf);
+//			__m128 res = _mm_sqrt_ps(m);
+//			_mm_storeu_ps(pf, res);
+//			pf += 4;
+//		}
+//		return;
+//	}
+//#endif
+
+}
+
+
 void FastArray_4f32::sqrt(int from, int to)
 {
 	GSIMD_CHECK_RANGE
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::sqrt((float *) &m_Vec[from], to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].sqrt();
 }
@@ -335,6 +468,13 @@ void FastArray_4f32::sqrt(int from, int to)
 void FastArray_4f32::reciprocal(int from, int to)
 {
 	GSIMD_CHECK_RANGE
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::reciprocal((float *) &m_Vec[from], to - from);
+		return;
+	}
+#endif
 	for (int n=from; n<to; n++)
 		m_Vec[n].reciprocal();
 }
@@ -342,37 +482,16 @@ void FastArray_4f32::reciprocal(int from, int to)
 void FastArray_4f32::inv_sqrt(int from, int to)
 {
 	GSIMD_CHECK_RANGE
+#ifdef GSIMD_USE_SSE
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
+	{
+		FastArray_4f32_SSE::inv_sqrt((float *) &m_Vec[from], to - from);
+		return;
+	}
+#endif
 	// cannot be auto-vectorized! must be done manually
 	for (int n=from; n<to; n++)
 		m_Vec[n].inv_sqrt();
-
-#ifdef GSIMD_NONE
-#endif
-
-#ifdef GSIMD_SSE
-//	__m128 add_val = _mm_set_ps(val.x, val.y, val.z, val.w);
-
-//	float * pf = (float *) &m_Vec[from];
-
-//	for (int n=from; n<to; n++)
-//	{
-//		__m128 m = _mm_load_ps(pf);
-//		__m128 res = _mm_add_ps(m, add_val);
-//		_mm_store_ps(pf, res);
-//		pf += 4;
-//	}
-#endif
-
-#ifdef GSIMD_NEON
-//	float * pf = (float *) &m_Vec[from];
-//	for (int n=from; n<to; n++)
-//	{
-//		float32x4_t m;
-//		float32x4_t  res = vaddq_f32(m, add_val);
-//		pf += 4;
-//	}
-#endif
-
 }
 
 
@@ -416,4 +535,16 @@ void FastArray_4f32::_bind_methods()
 	ClassDB::bind_method(D_METHOD("sqrt", "from", "to"), &FastArray_4f32::sqrt);
 	ClassDB::bind_method(D_METHOD("sqrt_inv", "from", "to"), &FastArray_4f32::inv_sqrt);
 	ClassDB::bind_method(D_METHOD("reciprocal", "from", "to"), &FastArray_4f32::reciprocal);
+
+	ClassDB::bind_method(D_METHOD("test", "from", "to"), &FastArray_4f32::test);
 }
+
+#ifdef GSIMD_NEON
+//	float * pf = (float *) &m_Vec[from];
+//	for (int n=from; n<to; n++)
+//	{
+//		float32x4_t m;
+//		float32x4_t  res = vaddq_f32(m, add_val);
+//		pf += 4;
+//	}
+#endif

@@ -1,6 +1,7 @@
 # SCsub
 Import('env')
 
+# Common to all architectures
 sources = [
     "simd_all.cpp",
 ]
@@ -8,14 +9,24 @@ sources = [
 module_env = env.Clone()
 module_env.Append(CXXFLAGS=['-O3', '-std=c++11', '-Wno-sign-compare', '-Wno-strict-aliasing'])
 
-if ARGUMENTS.get('simd_shared', 'no') == 'yes':
-    # Shared lib compilation
-    module_env.Append(CXXFLAGS='-fPIC')
-    module_env['LIBS'] = []
-    shared_lib = module_env.SharedLibrary(target='#bin/simd', source=sources)
-    shared_lib_shim = shared_lib[0].name.rsplit('.', 1)[0]
-    env.Append(LIBS=[shared_lib_shim])
-    env.Append(LIBPATH=['#bin'])
-else:
-    # Static compilation
-    module_env.add_source_files(env.modules_sources, sources)
+# Note!! Do NOT call any library functions inside the architecture specific source files.
+# See https://randomascii.wordpress.com/2016/12/05/vc-archavx-option-unsafe-at-any-speed/
+
+# SSE 1
+sources_SSE = [
+    "simd_f32_sse.cpp",
+]
+module_env_SSE = module_env.Clone()
+module_env_SSE.Append(CXXFLAGS=['-msse'])
+
+# SSE 3
+sources_SSE3 = [
+    "simd_f32_sse3.cpp",
+]
+module_env_SSE3 = module_env.Clone()
+module_env_SSE3.Append(CXXFLAGS=['-msse3'])
+
+
+module_env.add_source_files(env.modules_sources, sources)
+module_env_SSE.add_source_files(env.modules_sources, sources_SSE)
+module_env_SSE3.add_source_files(env.modules_sources, sources_SSE3)

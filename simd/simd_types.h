@@ -26,25 +26,19 @@
 
 
 #include "core/math/quat.h"
+#include "core/math/transform.h"
+#include "simd_cpu.h"
 
 #ifndef float32_t
 #define float32_t float
 #endif
 
+
 // Mostly we will rely on auto-vectorization.
 // However some instructions (e.g. reciprocal sqrt) cannot be autovectorized
 // Note that you seem to need -O3 for autovectorization, and x86_64 has minimum SSE2 support...
 // for x86 you need to explicitly enable it in the compiler with -msse etc.
-#define GSIMD_NONE
-#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__)
-//#define GSIMD_SSE
-#endif
-#if (defined(__i386) || defined(__i386__))
-//#define GSIMD_SSE
-#endif
-#if defined(__arm__)
-//#define GSIMD_NEON
-#endif
+
 
 // TODO:
 // Alignment
