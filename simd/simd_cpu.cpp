@@ -17,6 +17,8 @@
 
 #ifdef UNIX_ENABLED
 #include <cpuid.h>
+//#include <xsaveintrin.h>
+//#include <immintrin.h>
 #endif
 
 #endif
@@ -48,6 +50,7 @@ Godot_CPU::Godot_CPU()
 	m_szName = "NoCPU";
 	Detect();
 	Detect_Max();
+
 }
 
 void Godot_CPU::Detect_Max()
@@ -70,8 +73,40 @@ void Godot_CPU::Detect_Max()
 		m_eMaxSSE = M_SSE4_2;
 	if (HasFlag(F_AVX))
 		m_eMaxSSE = M_AVX;
+	if (HasFlag(F_AVX2))
+		m_eMaxSSE = M_AVX2;
 	if (HasFlag(F_AVX512))
 		m_eMaxSSE = M_AVX512;
+}
+
+String Godot_CPU::get_sse_caps_string(String spacer)
+{
+	String sz = "";
+
+	if (HasFlag(F_NEON))
+		sz += "NEON" + spacer;
+	if (HasFlag(F_MMX))
+		sz += "MMX" + spacer;
+	if (HasFlag(F_SSE))
+		sz += "SSE" + spacer;
+	if (HasFlag(F_SSE2))
+		sz += "SSE2" + spacer;
+	if (HasFlag(F_SSE3))
+		sz += "SSE3" + spacer;
+	if (HasFlag(F_SSSE3))
+		sz += "SSSE3" + spacer;
+	if (HasFlag(F_SSE4_1))
+		sz += "SSE4.1" + spacer;
+	if (HasFlag(F_SSE4_2))
+		sz += "SSE4.2" + spacer;
+	if (HasFlag(F_AVX))
+		sz += "AVX" + spacer;
+	if (HasFlag(F_AVX2))
+		sz += "AVX2" + spacer;
+	if (HasFlag(F_AVX512))
+		sz += "AVX512" + spacer;
+
+	return sz;
 }
 
 void Godot_CPU::Detect()
@@ -94,12 +129,20 @@ void Godot_CPU::Detect()
 
 	unsigned int cpuInfo[4];
 	unsigned int cpuInfo1[4];
+	unsigned int cpuInfo7[4];
 	memset(cpuInfo, 0, sizeof (cpuInfo));
 	memset(cpuInfo1, 0, sizeof (cpuInfo1));
+	memset(cpuInfo7, 0, sizeof (cpuInfo7));
 
 #if (_MSC_FULL_VER >= 160040219)
 	__cpuid(cpuInfo, 0);
 	__cpuid(cpuInfo1, 1);
+
+	int num_ids = cpuInfo[0];
+	if (num_ids >= 7)
+	{
+		__cpuid(cpuInfo7, 7);
+	}
 #else // msvc
 
 #ifdef UNIX_ENABLED
@@ -107,7 +150,18 @@ void Godot_CPU::Detect()
 	assert (res);
 	res = __get_cpuid(1, &cpuInfo1[0], &cpuInfo1[1], &cpuInfo1[2], &cpuInfo1[3]);
 	assert (res);
+
+
+	int num_ids = cpuInfo[0];
+	if (num_ids >= 7)
+	{
+		res = __get_cpuid(7, &cpuInfo7[0], &cpuInfo7[1], &cpuInfo7[2], &cpuInfo7[3]);
+		assert (res);
+	}
+
 #else // unix
+
+// Windows non visual studio? To do..
 #pragma message ("Godot_CPU::Detect() Compiler does not support CPUID intrinsic")
 #endif // not unix
 
@@ -127,7 +181,7 @@ void Godot_CPU::Detect()
 
 
 	// supports AVX? only detected on windows so far
-#ifdef WINDOWS_ENABLED
+//#ifdef WINDOWS_ENABLED
 	// AVX
 	bool bCpuAVX = cpuInfo1[2] & (1 << 28) || false;
 	bool bOS_XSAVE = cpuInfo1[2] & (1 << 27) || false;
@@ -135,13 +189,29 @@ void Godot_CPU::Detect()
 	if (bCpuAVX && bOS_XSAVE)
 	{
         // Check if the OS will save the YMM registers
-        unsigned long long xcrFeatureMask = _xgetbv(_XCR_XFEATURE_ENABLED_MASK);
-        bool bAVX = (xcrFeatureMask & 0x6) == 6;
+        //unsigned long long xcrFeatureMask = xgetbv(_XCR_XFEATURE_ENABLED_MASK);
+        //bool bAVX = (xcrFeatureMask & 0x6) == 6;
+
+		// https://chromium.googlesource.com/chromium/src/base/+/refs/heads/master/cpu.cc
+		bool bAVX =
+			(cpuInfo1[2] & 0x10000000) != 0 &&
+			(cpuInfo1[2] & 0x04000000) != 0 && // xsave
+			(cpuInfo1[2] & 0x08000000) != 0 && // osxsave
+			(xgetbv(0) & 6) == 6; // xsave enabled by kernel
 
 		if (bAVX)
+		{
+			// avx
 			m_Flags |= F_AVX;
+
+			// avx 2?
+			if ((cpuInfo7[1] & 0x00000020) != 0)
+				m_Flags |= F_AVX2;
+		}
+
+
 	}
-#endif
+//#endif
 
 	if (cpuInfo1[2] & (1 << 20) || false)
 		m_Flags |= F_SSE4_2;
@@ -169,6 +239,20 @@ void Godot_CPU::Detect()
 
 }
 
+
+// xgetbv returns the value of an Intel Extended Control Register (XCR).
+// Currently only XCR0 is defined by Intel so |xcr| should always be zero.
+uint64_t Godot_CPU::xgetbv(uint32_t xcr)
+{
+#if defined(_MSC_VER)
+  return _xgetbv(xcr);
+#else
+  uint32_t eax, edx;
+  __asm__ volatile (
+    "xgetbv" : "=a"(eax), "=d"(edx) : "c"(xcr));
+  return (static_cast<uint64_t>(edx) << 32) | eax;
+#endif  // defined(COMPILER_MSVC)
+}
 
 
 } // namespace

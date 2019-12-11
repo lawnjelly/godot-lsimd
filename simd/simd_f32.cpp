@@ -24,6 +24,7 @@
 #include <string.h>
 #include "simd_f32_sse.h"
 #include "simd_f32_sse3.h"
+#include "simd_f32_sse4_1.h"
 
 
 //#ifdef GSIMD_USE_SSE
@@ -253,8 +254,9 @@ void FastArray_4f32::vec3_dot(Object * pArr2, int from, int to)
 		return; // not the right type
 
 #ifdef GSIMD_USE_SSE4_1
-//	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
-//	{
+	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE4_1))
+	{
+		FastArray_4f32_SSE4_1::vec3_dot((float *) &m_Vec[from], (float *) &p2->m_Vec[from], to - from);
 //		float * pf = (float *) &m_Vec[from];
 //		float * pf2 = (float *) &p2->m_Vec[from];
 
@@ -267,8 +269,8 @@ void FastArray_4f32::vec3_dot(Object * pArr2, int from, int to)
 //			pf += 4;
 //			pf2 += 4;
 //		}
-//		return;
-//	}
+		return;
+	}
 #endif
 
 	for (int n=from; n<to; n++)
@@ -429,6 +431,18 @@ void FastArray_4f32::vec3_normalize(int from, int to)
 		m_Vec[n].vec3_normalize();
 }
 
+
+String FastArray_4f32::get_cpu_name()
+{
+	return g_GodotCPU.get_name();
+}
+
+String FastArray_4f32::get_cpu_caps(String spacer)
+{
+	return g_GodotCPU.get_sse_caps_string(spacer);
+}
+
+
 void FastArray_4f32::test(int from, int to)
 {
 	GSIMD_CHECK_RANGE
@@ -535,6 +549,9 @@ void FastArray_4f32::_bind_methods()
 	ClassDB::bind_method(D_METHOD("sqrt", "from", "to"), &FastArray_4f32::sqrt);
 	ClassDB::bind_method(D_METHOD("sqrt_inv", "from", "to"), &FastArray_4f32::inv_sqrt);
 	ClassDB::bind_method(D_METHOD("reciprocal", "from", "to"), &FastArray_4f32::reciprocal);
+
+	ClassDB::bind_method(D_METHOD("get_cpu_name"), &FastArray_4f32::get_cpu_name);
+	ClassDB::bind_method(D_METHOD("get_cpu_caps", "spacer"), &FastArray_4f32::get_cpu_caps);
 
 	ClassDB::bind_method(D_METHOD("test", "from", "to"), &FastArray_4f32::test);
 }

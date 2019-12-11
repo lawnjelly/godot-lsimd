@@ -96,6 +96,10 @@ public:
 
 	void test(int from, int to);
 
+	String get_cpu_name();
+	String get_cpu_caps(String spacer);
+
+
 protected:
 	static void _bind_methods();
 	

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/ustring.h"
 
 namespace GSimd
 {
@@ -44,7 +45,8 @@ public:
 		F_SSE4_1 = 1 << 5,
 		F_SSE4_2 = 1 << 6,
 		F_AVX = 1 << 7,
-		F_AVX512 = 1 << 8,
+		F_AVX2= 1 << 8,
+		F_AVX512 = 1 << 9,
 
 		// Neon
 		F_NEON = 1 << 16,
@@ -61,6 +63,7 @@ public:
 		M_SSE4_1,
 		M_SSE4_2,
 		M_AVX,
+		M_AVX2,
 		M_AVX512,
 	};
 
@@ -79,9 +82,13 @@ public:
 	eMaxSSE get_max_sse() const {return m_eMaxSSE;}
 	eMaxNeon get_max_neon() const {return m_eMaxNeon;}
 
+	String get_sse_caps_string(String spacer);
+
 private:
 	void Detect();
 	void Detect_Max();
+	uint64_t xgetbv(uint32_t xcr);
+
 
 	unsigned int m_Flags;
 	eMaxSSE m_eMaxSSE;

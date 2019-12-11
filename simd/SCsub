@@ -26,7 +26,15 @@ sources_SSE3 = [
 module_env_SSE3 = module_env.Clone()
 module_env_SSE3.Append(CXXFLAGS=['-msse3'])
 
+# SSE 4.1
+sources_SSE4_1 = [
+    "simd_f32_sse4_1.cpp",
+]
+module_env_SSE4_1 = module_env.Clone()
+module_env_SSE4_1.Append(CXXFLAGS=['-msse4.1'])
+
 
 module_env.add_source_files(env.modules_sources, sources)
 module_env_SSE.add_source_files(env.modules_sources, sources_SSE)
 module_env_SSE3.add_source_files(env.modules_sources, sources_SSE3)
+module_env_SSE4_1.add_source_files(env.modules_sources, sources_SSE4_1)
