@@ -127,9 +127,9 @@ void Godot_CPU::Detect()
 	// x86 / x86_64
 #ifdef GSIMD_USE_SSE
 
-	unsigned int cpuInfo[4];
-	unsigned int cpuInfo1[4];
-	unsigned int cpuInfo7[4];
+	uint32_t cpuInfo[4];
+	uint32_t cpuInfo1[4];
+	uint32_t cpuInfo7[4];
 	memset(cpuInfo, 0, sizeof (cpuInfo));
 	memset(cpuInfo1, 0, sizeof (cpuInfo1));
 	memset(cpuInfo7, 0, sizeof (cpuInfo7));
