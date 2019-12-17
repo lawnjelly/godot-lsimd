@@ -1,5 +1,9 @@
+#!/usr/bin/env python
+
 # SCsub
 Import('env')
+#!/usr/bin/env python
+
 
 # Common to all architectures
 sources = [
@@ -7,34 +11,73 @@ sources = [
 ]
 
 module_env = env.Clone()
-module_env.Append(CXXFLAGS=['-O3', '-std=c++11', '-Wno-sign-compare', '-Wno-strict-aliasing'])
+module_env.Append(CCFLAGS=['-O3', '-std=c++11', '-Wno-sign-compare', '-Wno-strict-aliasing'])
+
+# ideas from libvpx/SCsub
+# and x11/detect.py
+ # and windows/detect.py
+import platform
+is_android = (env["platform"] == 'android')
+is_x11 = (env["platform"] == 'x11')
+is_ios = (env["platform"] == 'iphone')
+is_osx = (env["platform"] == 'osx')
+is_uwp = (env["platform"] == 'uwp')
+is_windows = (env["platform"] == 'windows')
+
+is_arm = platform.machine().startswith('arm')
+
+# x86?
+is_x86 = False
+list_of_x86 = ['x86_64', 'x86', 'i386', 'i586']
+if any(platform.machine() in s for s in list_of_x86):
+    is_x86 = True
+#is_x86 = platform.machine().startswith('x86')
+
+is_android_x86 = (env["platform"] == 'android' and env["android_arch"].startswith('x86'))
+
+import os
+from methods import get_compiler_version, using_gcc, using_clang
+is_clang_or_gcc = using_gcc or using_clang
+is_msvc = env.msvc
+
+
+
+compile_sse = (is_x11 or is_windows) and (is_x86)
 
 # Note!! Do NOT call any library functions inside the architecture specific source files.
 # See https://randomascii.wordpress.com/2016/12/05/vc-archavx-option-unsafe-at-any-speed/
 
-# SSE 1
-sources_SSE = [
-    "simd_f32_sse.cpp",
-]
-module_env_SSE = module_env.Clone()
-module_env_SSE.Append(CXXFLAGS=['-msse'])
+if compile_sse:
+    # SSE 1
+    sources_SSE = [
+        "simd_f32_sse.cpp",
+    ]
+    module_env_SSE = module_env.Clone()
 
-# SSE 3
-sources_SSE3 = [
-    "simd_f32_sse3.cpp",
-]
-module_env_SSE3 = module_env.Clone()
-module_env_SSE3.Append(CXXFLAGS=['-msse3'])
+    # intrinsics hopefully always work on msvc even without a flag
+    if is_clang_or_gcc:
+        module_env_SSE.Append(CCFLAGS=['-msse'])
 
-# SSE 4.1
-sources_SSE4_1 = [
-    "simd_f32_sse4_1.cpp",
-]
-module_env_SSE4_1 = module_env.Clone()
-module_env_SSE4_1.Append(CXXFLAGS=['-msse4.1'])
+    # SSE 3
+    sources_SSE3 = [
+        "simd_f32_sse3.cpp",
+    ]
+    module_env_SSE3 = module_env.Clone()
+    if is_clang_or_gcc:
+        module_env_SSE3.Append(CCFLAGS=['-msse3'])
+
+    # SSE 4.1
+    sources_SSE4_1 = [
+        "simd_f32_sse4_1.cpp",
+    ]
+    module_env_SSE4_1 = module_env.Clone()
+    if is_clang_or_gcc:
+        module_env_SSE4_1.Append(CCFLAGS=['-msse4.1'])
 
 
 module_env.add_source_files(env.modules_sources, sources)
-module_env_SSE.add_source_files(env.modules_sources, sources_SSE)
-module_env_SSE3.add_source_files(env.modules_sources, sources_SSE3)
-module_env_SSE4_1.add_source_files(env.modules_sources, sources_SSE4_1)
+
+if compile_sse:
+    module_env_SSE.add_source_files(env.modules_sources, sources_SSE)
+    module_env_SSE3.add_source_files(env.modules_sources, sources_SSE3)
+    module_env_SSE4_1.add_source_files(env.modules_sources, sources_SSE4_1)

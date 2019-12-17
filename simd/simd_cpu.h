@@ -6,8 +6,10 @@ namespace GSimd
 {
 
 
+// we are specifically only supporting certain platforms
+// note that this can potentially be expanded for more x86, but needs testing
+#if defined (WINDOWS_ENABLED) || defined (X11_ENABLED)
 // X86
-//#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__)
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined (__i386) || defined (__i386__)
 // All these will be used if detected. If you want a particular method compiled out, remove the corresponding define.
 #define GSIMD_USE_SSE
@@ -19,14 +21,16 @@ namespace GSimd
 #define GSIMD_USE_SSE4_2
 #define GSIMD_USE_AVX
 #define GSIMD_USE_AVX512
-#endif
-//#if (defined(__i386) || defined(__i386__))
-//#endif
+#endif // x86
+#endif // win / linux
 
+// could be also iOS? might need detection code
+#if defined (ANDROID_ENABLED)
 // ARM
 #if defined(__arm__)
 #define GSIMD_USE_NEON
 #endif
+#endif // android
 
 
 class Godot_CPU
