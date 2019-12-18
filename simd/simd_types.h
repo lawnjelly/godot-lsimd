@@ -113,6 +113,54 @@ struct f32_4
 		*this = t;
 	}
 
+	void vec2_dot(const f32_4 &o, float * pfRes)
+	{
+		pfRes[0] = (v[0] * o.v[0]) + (v[1] * o.v[1]);
+		pfRes[1] = (v[2] * o.v[2]) + (v[3] * o.v[3]);
+	}
+
+	void vec2_cross(const f32_4 &o, float * pfRes)
+	{
+		pfRes[0] = (v[0] * o.v[1]) - (v[1] * o.v[0]);
+		pfRes[1] = (v[2] * o.v[3]) - (v[3] * o.v[2]);
+	}
+
+	void vec2_length_squared(float * pfRes)
+	{
+		pfRes[0] = (v[0] * v[0]) + (v[1] * v[1]);
+		pfRes[1] = (v[2] * v[2]) + (v[3] * v[3]);
+	}
+
+	void vec2_length(float * pfRes)
+	{
+		vec2_length_squared(pfRes);
+		pfRes[0] = Math::sqrt(pfRes[0]);
+		pfRes[1] = Math::sqrt(pfRes[1]);
+	}
+
+	void vec2_normalize()
+	{
+		float sl[2];
+		vec2_length_squared(sl);
+
+		for (int n=0; n<2; n++)
+		{
+			int base = n * 2;
+
+			if (sl[n] == 0.0f)
+			{
+				v[base] = 0.0f; v[base+1] = 0.0f;
+			}
+			else
+			{
+				float l = Math::sqrt(sl[n]);
+
+				v[base] /= l;
+				v[base+1] /= l;
+			}
+		}
+	}
+
 	void vec3_dot(const f32_4 &o)
 	{
 		v[3] = (v[0] * o.v[0]) + (v[1] * o.v[1]) + (v[2] * o.v[2]);

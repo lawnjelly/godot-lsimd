@@ -29,7 +29,7 @@ namespace GSimd
 {
 
 
-class FastArray_4f32_SSE4_1
+class Simd_4f32_SSE4_1
 {
 public:
 	static void vec3_dot(float * pfUnits, const float * pUnits2, int nUnits);

@@ -31,7 +31,7 @@ namespace GSimd
 {
 
 
-class FastArray_4f32_SSE3
+class Simd_4f32_SSE3
 {
 public:
 	static void vec3_length(float * pfUnits, int nUnits);

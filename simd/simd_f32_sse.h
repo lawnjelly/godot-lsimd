@@ -27,7 +27,7 @@
 namespace GSimd
 {
 
-class FastArray_4f32_SSE
+class Simd_4f32_SSE
 {
 public:
 	static void add(float * pfUnits, const float * pUnits2, int nUnits);

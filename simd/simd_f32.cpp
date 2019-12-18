@@ -53,35 +53,57 @@
 using namespace GSimd;
 
 
-#define GSIMD_CHECK_RANGE if (!check_range(from, to)) {return;}
-
+#define GSIMD_CHECK_RANGE if (!check_range(from, num, size())) {return;}
+#define GSIMD_CHECK_BOTH_RANGE if (!check_range(from, num, size())) {return;} \
+if (!check_range(from2, num, arr2.size())) {return;}
 
 // Note that most of these routines will be auto-vectorized if -O3 is used and the architecture is set
 
-FastArray_4f32::FastArray_4f32()
+Simd_4f32::Simd_4f32()
 {
 
 }
 
-Quat FastArray_4f32::read(int i) const
+
+
+Vector3 Simd_4f32::vec3_read(int i) const
+{
+	const GSimd::f32_4 &u = m_Vec[i];
+	return Vector3(u.v[0], u.v[1], u.v[2]);
+}
+
+void Simd_4f32::vec3_write(int i, const Vector3 &v)
+{
+	GSimd::f32_4 &u = m_Vec[i];
+	u.v[0] = v.x;
+	u.v[1] = v.y;
+	u.v[2] = v.z;
+	u.v[3] = 0.0;
+}
+
+
+Quat Simd_4f32::read(int i) const
 {
 	Quat q;
 	m_Vec[i].to_quat(q);
 	return q;
 }
 
-void FastArray_4f32::write(int i, const Quat &q)
+void Simd_4f32::write(int i, const Quat &q)
 {
 	m_Vec[i].from_quat(q);
 }
 
 
-bool FastArray_4f32::check_range(int from, int to) const
+
+
+bool Simd_4f32::check_range(int from, int num, int size) const
 {
-	int size = m_Vec.size();
+	int to = from + num;
+
 	// check for below zero at same time
-	if ((unsigned int) from > size) goto failed;
-	if ((unsigned int) to > size) goto failed;
+	if ((unsigned int) from > (unsigned int) size) goto failed;
+	if ((unsigned int) to > (unsigned int) size) goto failed;
 	return true;
 
 failed:
@@ -90,7 +112,7 @@ failed:
 	return false;
 }
 
-void FastArray_4f32::fill(const Quat &val)
+void Simd_4f32::fill(const Quat &val)
 {
 	f32_4 u;
 	u.from_quat(val);
@@ -99,14 +121,14 @@ void FastArray_4f32::fill(const Quat &val)
 		m_Vec[n] = u;
 }
 
-void FastArray_4f32::zero()
+void Simd_4f32::zero()
 {
 	int s = size();
 	if (!s) return;
 	memset(&m_Vec[0], 0, sizeof (GSimd::f32_4) * s);
 }
 
-PoolRealArray FastArray_4f32::get_poolrealarray_result() const
+PoolRealArray Simd_4f32::get_poolrealarray_result() const
 {
 	int s = size();
 
@@ -121,7 +143,7 @@ PoolRealArray FastArray_4f32::get_poolrealarray_result() const
 }
 
 
-PoolVector<Vector3> FastArray_4f32::get_poolvector3array() const
+PoolVector<Vector3> Simd_4f32::get_poolvector3array() const
 {
 	int s = size();
 
@@ -140,7 +162,7 @@ PoolVector<Vector3> FastArray_4f32::get_poolvector3array() const
 }
 
 
-void FastArray_4f32::copyfrom_poolvector3array(const PoolVector<Vector3> &arr)
+void Simd_4f32::copyfrom_poolvector3array(const PoolVector<Vector3> &arr)
 {
 	int size = arr.size();
 
@@ -159,13 +181,9 @@ void FastArray_4f32::copyfrom_poolvector3array(const PoolVector<Vector3> &arr)
 	}
 }
 
-void FastArray_4f32::copy(Object * pArr2)
+void Simd_4f32::copy(const Simd_4f32 &o)
 {
-	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
-	if (!p2)
-		return; // not the right type
-
-	int size = p2->size();
+	int size = o.size();
 	if (size == 0)
 	{
 		m_Vec.clear(true);
@@ -174,112 +192,159 @@ void FastArray_4f32::copy(Object * pArr2)
 
 	reserve(size);
 
-	memcpy(&m_Vec[0], &p2->m_Vec[0], sizeof (GSimd::f32_4) * size);
+	memcpy(&m_Vec[0], &o.m_Vec[0], sizeof (GSimd::f32_4) * size);
 }
 
 
-void FastArray_4f32::add(Object * pArr2, int from, int to)
+void Simd_4f32::add(Simd_4f32 &arr2, int from, int from2, int num)
 {
-	GSIMD_CHECK_RANGE
-	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
-	if (!p2)
-		return; // not the right type
+	int to = from + num;
+	GSIMD_CHECK_BOTH_RANGE
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::add((float *) &m_Vec[from], (float *) &p2->m_Vec[from], to - from);
+		Simd_4f32_SSE::add((float *) &m_Vec[from], (float *) &arr2.m_Vec[from2], num);
 		return;
 	}
 #endif
 	for (int n=from; n<to; n++)
-		m_Vec[n].add(p2->m_Vec[n]);
+		m_Vec[n].add(arr2.m_Vec[from2++]);
 }
 
-void FastArray_4f32::subtract(Object * pArr2, int from, int to)
+void Simd_4f32::subtract(Simd_4f32 &arr2, int from, int from2, int num)
 {
-	GSIMD_CHECK_RANGE
-	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
-	if (!p2)
-		return; // not the right type
+	int to = from + num;
+	GSIMD_CHECK_BOTH_RANGE
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::subtract((float *) &m_Vec[from], (float *) &p2->m_Vec[from], to - from);
+		Simd_4f32_SSE::subtract((float *) &m_Vec[from], (float *) &arr2.m_Vec[from], num);
 		return;
 	}
 #endif
 	for (int n=from; n<to; n++)
-		m_Vec[n].subtract(p2->m_Vec[n]);
+		m_Vec[n].subtract(arr2.m_Vec[from2++]);
 }
 
-void FastArray_4f32::multiply(Object * pArr2, int from, int to)
+void Simd_4f32::multiply(Simd_4f32 &arr2, int from, int from2, int num)
 {
-	GSIMD_CHECK_RANGE
-	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
-	if (!p2)
-		return; // not the right type
+	int to = from + num;
+	GSIMD_CHECK_BOTH_RANGE
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::multiply((float *) &m_Vec[from], (float *) &p2->m_Vec[from], to - from);
+		Simd_4f32_SSE::multiply((float *) &m_Vec[from], (float *) &arr2.m_Vec[from], num);
 		return;
 	}
 #endif
 	for (int n=from; n<to; n++)
-		m_Vec[n].multiply(p2->m_Vec[n]);
+		m_Vec[n].multiply(arr2.m_Vec[from2++]);
 }
 
-void FastArray_4f32::divide(Object * pArr2, int from, int to)
+void Simd_4f32::divide(Simd_4f32 &arr2, int from, int from2, int num)
 {
-	GSIMD_CHECK_RANGE
-	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
-	if (!p2)
-		return; // not the right type
+	int to = from + num;
+	GSIMD_CHECK_BOTH_RANGE
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::divide((float *) &m_Vec[from], (float *) &p2->m_Vec[from], to - from);
+		Simd_4f32_SSE::divide((float *) &m_Vec[from], (float *) &arr2.m_Vec[from], num);
 		return;
 	}
 #endif
 	for (int n=from; n<to; n++)
-		m_Vec[n].divide(p2->m_Vec[n]);
+		m_Vec[n].divide(arr2.m_Vec[from2++]);
 }
 
-void FastArray_4f32::vec3_dot(Object * pArr2, int from, int to)
+void Simd_4f32::vec2_dot(Simd_4f32 &arr2, int from, int from2, int num, float * pfResult)
 {
-	GSIMD_CHECK_RANGE
-	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
-	if (!p2)
-		return; // not the right type
+	int to = from + num;
+	GSIMD_CHECK_BOTH_RANGE
 
+	for (int n=from; n<to; n++)
+	{
+		m_Vec[n].vec2_dot(arr2.m_Vec[from2++], pfResult);
+		pfResult += 2;
+	}
+}
+
+void Simd_4f32::vec2_cross(Simd_4f32 &arr2, int from, int from2, int num, float * pfResult)
+{
+	int to = from + num;
+	GSIMD_CHECK_BOTH_RANGE
+
+	for (int n=from; n<to; n++)
+	{
+		m_Vec[n].vec2_cross(arr2.m_Vec[from2++], pfResult);
+		pfResult += 2;
+	}
+}
+
+void Simd_4f32::vec2_length(int from, int num, float * pfResult)
+{
+	int to = from + num;
+	GSIMD_CHECK_RANGE
+	for (int n=from; n<to; n++)
+	{
+		m_Vec[n].vec2_length(pfResult);
+		pfResult += 2;
+	}
+}
+
+void Simd_4f32::vec2_length_squared(int from, int num, float * pfResult)
+{
+	int to = from + num;
+	GSIMD_CHECK_RANGE
+	for (int n=from; n<to; n++)
+	{
+		m_Vec[n].vec2_length_squared(pfResult);
+		pfResult += 2;
+	}
+}
+
+
+void Simd_4f32::vec3_dot(Simd_4f32 &arr2, int from, int from2, int num)
+{
+	int to = from + num;
+	GSIMD_CHECK_BOTH_RANGE
 #ifdef GSIMD_USE_SSE4_1
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE4_1))
 	{
-		FastArray_4f32_SSE4_1::vec3_dot((float *) &m_Vec[from], (float *) &p2->m_Vec[from], to - from);
-//		float * pf = (float *) &m_Vec[from];
-//		float * pf2 = (float *) &p2->m_Vec[from];
-
-//		for (int n=from; n<to; n++)
-//		{
-//			__m128 m = _mm_loadu_ps(pf);
-//			__m128 m2 = _mm_loadu_ps(pf2);
-//			__m128 res = _mm_div_ps(m, m2);
-//			_mm_storeu_ps(pf, res);
-//			pf += 4;
-//			pf2 += 4;
-//		}
+		Simd_4f32_SSE4_1::vec3_dot((float *) &m_Vec[from], (float *) &arr2.m_Vec[from], num);
 		return;
 	}
 #endif
 
 	for (int n=from; n<to; n++)
-		m_Vec[n].vec3_dot(p2->m_Vec[n]);
+		m_Vec[n].vec3_dot(arr2.m_Vec[from2++]);
+}
+
+void Simd_4f32::vec3_unit_cross(Simd_4f32 &arr2, int from, int from2, int num)
+{
+	int to = from + num;
+	GSIMD_CHECK_BOTH_RANGE
+
+	for (int n=from; n<to; n++)
+	{
+		m_Vec[n].vec3_cross(arr2.m_Vec[from2++]);
+		m_Vec[n].vec3_normalize();
+	}
+
+}
+
+void Simd_4f32::vec3_cross(Simd_4f32 &arr2, int from, int from2, int num)
+{
+	int to = from + num;
+	GSIMD_CHECK_BOTH_RANGE
+
+	for (int n=from; n<to; n++)
+		m_Vec[n].vec3_cross(arr2.m_Vec[from2++]);
 }
 
 
-void FastArray_4f32::vec3_inv_xform(const Transform &tr, int from, int to)
+void Simd_4f32::vec3_inv_xform(const Transform &tr, int from, int num)
 {
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 
 	f32_transform trans;
@@ -291,8 +356,9 @@ void FastArray_4f32::vec3_inv_xform(const Transform &tr, int from, int to)
 }
 
 
-void FastArray_4f32::vec3_xform(const Transform &tr, int from, int to)
+void Simd_4f32::vec3_xform(const Transform &tr, int from, int num)
 {
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 
 	f32_transform trans;
@@ -303,43 +369,19 @@ void FastArray_4f32::vec3_xform(const Transform &tr, int from, int to)
 }
 
 
-void FastArray_4f32::vec3_unit_cross(Object * pArr2, int from, int to)
+
+
+
+void Simd_4f32::value_add(const Quat &val, int from, int num)
 {
-	GSIMD_CHECK_RANGE
-	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
-	if (!p2)
-		return; // not the right type
-
-	for (int n=from; n<to; n++)
-	{
-		m_Vec[n].vec3_cross(p2->m_Vec[n]);
-		m_Vec[n].vec3_normalize();
-	}
-
-}
-
-void FastArray_4f32::vec3_cross(Object * pArr2, int from, int to)
-{
-	GSIMD_CHECK_RANGE
-	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
-	if (!p2)
-		return; // not the right type
-
-	for (int n=from; n<to; n++)
-		m_Vec[n].vec3_cross(p2->m_Vec[n]);
-}
-
-
-
-void FastArray_4f32::value_add(const Quat &val, int from, int to)
-{
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 	f32_4 u;
 	u.from_quat(val);
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::value_add((float *) &m_Vec[from], (float *) &u, to - from);
+		Simd_4f32_SSE::value_add((float *) &m_Vec[from], (float *) &u, num);
 		return;
 	}
 #endif
@@ -347,15 +389,16 @@ void FastArray_4f32::value_add(const Quat &val, int from, int to)
 		m_Vec[n].add(u);
 }
 
-void FastArray_4f32::value_subtract(const Quat &val, int from, int to)
+void Simd_4f32::value_subtract(const Quat &val, int from, int num)
 {
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 	f32_4 u;
 	u.from_quat(val);
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::value_subtract((float *) &m_Vec[from], (float *) &u, to - from);
+		Simd_4f32_SSE::value_subtract((float *) &m_Vec[from], (float *) &u, num);
 		return;
 	}
 #endif
@@ -363,15 +406,16 @@ void FastArray_4f32::value_subtract(const Quat &val, int from, int to)
 		m_Vec[n].subtract(u);
 }
 
-void FastArray_4f32::value_multiply(const Quat &val, int from, int to)
+void Simd_4f32::value_multiply(const Quat &val, int from, int num)
 {
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 	f32_4 u;
 	u.from_quat(val);
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::value_multiply((float *) &m_Vec[from], (float *) &u, to - from);
+		Simd_4f32_SSE::value_multiply((float *) &m_Vec[from], (float *) &u, num);
 		return;
 	}
 #endif
@@ -379,15 +423,16 @@ void FastArray_4f32::value_multiply(const Quat &val, int from, int to)
 		m_Vec[n].multiply(u);
 }
 
-void FastArray_4f32::value_divide(const Quat &val, int from, int to)
+void Simd_4f32::value_divide(const Quat &val, int from, int num)
 {
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 	f32_4 u;
 	u.from_quat(val);
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::value_divide((float *) &m_Vec[from], (float *) &u, to - from);
+		Simd_4f32_SSE::value_divide((float *) &m_Vec[from], (float *) &u, num);
 		return;
 	}
 #endif
@@ -395,13 +440,14 @@ void FastArray_4f32::value_divide(const Quat &val, int from, int to)
 		m_Vec[n].divide(u);
 }
 
-void FastArray_4f32::vec3_length(int from, int to)
+void Simd_4f32::vec3_length(int from, int num)
 {
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 #ifdef GSIMD_USE_SSE3
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE3))
 	{
-		FastArray_4f32_SSE3::vec3_length((float *) &m_Vec[from], to - from);
+		Simd_4f32_SSE3::vec3_length((float *) &m_Vec[from], num);
 		return;
 	}
 #endif
@@ -409,13 +455,14 @@ void FastArray_4f32::vec3_length(int from, int to)
 		m_Vec[n].vec3_length();
 }
 
-void FastArray_4f32::vec3_length_squared(int from, int to)
+void Simd_4f32::vec3_length_squared(int from, int num)
 {
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 #ifdef GSIMD_USE_SSE3
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE3))
 	{
-		FastArray_4f32_SSE3::vec3_length_squared((float *) &m_Vec[from], to - from);
+		Simd_4f32_SSE3::vec3_length_squared((float *) &m_Vec[from], num);
 		return;
 	}
 #endif
@@ -424,27 +471,29 @@ void FastArray_4f32::vec3_length_squared(int from, int to)
 }
 
 
-void FastArray_4f32::vec3_normalize(int from, int to)
+void Simd_4f32::vec3_normalize(int from, int num)
 {
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 	for (int n=from; n<to; n++)
 		m_Vec[n].vec3_normalize();
 }
 
 
-String FastArray_4f32::get_cpu_name()
+String Simd_4f32::get_cpu_name()
 {
 	return g_GodotCPU.get_name();
 }
 
-String FastArray_4f32::get_cpu_caps(String spacer)
+String Simd_4f32::get_cpu_caps(String spacer)
 {
 	return g_GodotCPU.get_sse_caps_string(spacer);
 }
 
 
-void FastArray_4f32::test(int from, int to)
+void Simd_4f32::test(int from, int num)
 {
+//	int to = from + num;
 	GSIMD_CHECK_RANGE
 //#ifdef GSIMD_USE_SSE
 //	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
@@ -465,13 +514,22 @@ void FastArray_4f32::test(int from, int to)
 }
 
 
-void FastArray_4f32::sqrt(int from, int to)
+void Simd_4f32::vec2_normalize(int from, int num)
 {
+	int to = from + num;
+	GSIMD_CHECK_RANGE
+	for (int n=from; n<to; n++)
+		m_Vec[n].vec2_normalize();
+}
+
+void Simd_4f32::sqrt(int from, int num)
+{
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::sqrt((float *) &m_Vec[from], to - from);
+		Simd_4f32_SSE::sqrt((float *) &m_Vec[from], num);
 		return;
 	}
 #endif
@@ -479,13 +537,14 @@ void FastArray_4f32::sqrt(int from, int to)
 		m_Vec[n].sqrt();
 }
 
-void FastArray_4f32::reciprocal(int from, int to)
+void Simd_4f32::reciprocal(int from, int num)
 {
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::reciprocal((float *) &m_Vec[from], to - from);
+		Simd_4f32_SSE::reciprocal((float *) &m_Vec[from], num);
 		return;
 	}
 #endif
@@ -493,13 +552,14 @@ void FastArray_4f32::reciprocal(int from, int to)
 		m_Vec[n].reciprocal();
 }
 
-void FastArray_4f32::inv_sqrt(int from, int to)
+void Simd_4f32::inv_sqrt(int from, int num)
 {
+	int to = from + num;
 	GSIMD_CHECK_RANGE
 #ifdef GSIMD_USE_SSE
 	if (g_GodotCPU.HasFlag(Godot_CPU::F_SSE))
 	{
-		FastArray_4f32_SSE::inv_sqrt((float *) &m_Vec[from], to - from);
+		Simd_4f32_SSE::inv_sqrt((float *) &m_Vec[from], num);
 		return;
 	}
 #endif
@@ -510,51 +570,6 @@ void FastArray_4f32::inv_sqrt(int from, int to)
 
 
 
-void FastArray_4f32::_bind_methods()
-{
-	ClassDB::bind_method(D_METHOD("reserve", "size"), &FastArray_4f32::reserve);
-	ClassDB::bind_method(D_METHOD("resize", "size"), &FastArray_4f32::resize);
-	ClassDB::bind_method(D_METHOD("fill", "value"), &FastArray_4f32::fill);
-	ClassDB::bind_method(D_METHOD("zero"), &FastArray_4f32::zero);
-
-
-	ClassDB::bind_method(D_METHOD("copy", "Second FastArray_4f32"), &FastArray_4f32::copy);
-	ClassDB::bind_method(D_METHOD("copyfrom_poolvector3array", "array"), &FastArray_4f32::copyfrom_poolvector3array);
-	ClassDB::bind_method(D_METHOD("get_poolvector3array"), &FastArray_4f32::get_poolvector3array);
-	ClassDB::bind_method(D_METHOD("get_poolrealarray_result"), &FastArray_4f32::get_poolrealarray_result);
-
-	ClassDB::bind_method(D_METHOD("read", "element"), &FastArray_4f32::read);
-	ClassDB::bind_method(D_METHOD("write", "element", "value"), &FastArray_4f32::write);
-	ClassDB::bind_method(D_METHOD("size"), &FastArray_4f32::size);
-
-	ClassDB::bind_method(D_METHOD("add", "array2", "from", "to"), &FastArray_4f32::add);
-	ClassDB::bind_method(D_METHOD("subtract", "array2", "from", "to"), &FastArray_4f32::subtract);
-	ClassDB::bind_method(D_METHOD("multiply", "array2", "from", "to"), &FastArray_4f32::multiply);
-	ClassDB::bind_method(D_METHOD("divide", "array2", "from", "to"), &FastArray_4f32::divide);
-
-	ClassDB::bind_method(D_METHOD("vec3_dot", "array2", "from", "to"), &FastArray_4f32::vec3_dot);
-	ClassDB::bind_method(D_METHOD("vec3_cross", "array2", "from", "to"), &FastArray_4f32::vec3_cross);
-	ClassDB::bind_method(D_METHOD("vec3_unit_cross", "array2", "from", "to"), &FastArray_4f32::vec3_unit_cross);
-	ClassDB::bind_method(D_METHOD("vec3_length", "from", "to"), &FastArray_4f32::vec3_length);
-	ClassDB::bind_method(D_METHOD("vec3_length_squared", "from", "to"), &FastArray_4f32::vec3_length_squared);
-	ClassDB::bind_method(D_METHOD("vec3_normalize", "from", "to"), &FastArray_4f32::vec3_normalize);
-	ClassDB::bind_method(D_METHOD("vec3_xform", "transform", "from", "to"), &FastArray_4f32::vec3_xform);
-	ClassDB::bind_method(D_METHOD("vec3_xform_inv", "transform", "from", "to"), &FastArray_4f32::vec3_inv_xform);
-
-	ClassDB::bind_method(D_METHOD("value_add", "value", "from", "to"), &FastArray_4f32::value_add);
-	ClassDB::bind_method(D_METHOD("value_subtract", "value", "from", "to"), &FastArray_4f32::value_subtract);
-	ClassDB::bind_method(D_METHOD("value_multiply", "value", "from", "to"), &FastArray_4f32::value_multiply);
-	ClassDB::bind_method(D_METHOD("value_divide", "value", "from", "to"), &FastArray_4f32::value_divide);
-
-	ClassDB::bind_method(D_METHOD("sqrt", "from", "to"), &FastArray_4f32::sqrt);
-	ClassDB::bind_method(D_METHOD("sqrt_inv", "from", "to"), &FastArray_4f32::inv_sqrt);
-	ClassDB::bind_method(D_METHOD("reciprocal", "from", "to"), &FastArray_4f32::reciprocal);
-
-	ClassDB::bind_method(D_METHOD("get_cpu_name"), &FastArray_4f32::get_cpu_name);
-	ClassDB::bind_method(D_METHOD("get_cpu_caps", "spacer"), &FastArray_4f32::get_cpu_caps);
-
-	ClassDB::bind_method(D_METHOD("test", "from", "to"), &FastArray_4f32::test);
-}
 
 #ifdef GSIMD_NEON
 //	float * pf = (float *) &m_Vec[from];
@@ -565,3 +580,6 @@ void FastArray_4f32::_bind_methods()
 //		pf += 4;
 //	}
 #endif
+
+#undef GSIMD_CHECK_RANGE
+#undef GSIMD_CHECK_BOTH_RANGE

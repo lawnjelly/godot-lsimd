@@ -62,6 +62,13 @@ public:
 			compact();
 	}
 
+	void zero()
+	{
+		int s = size();
+		if (!s) return;
+		memset(&m_Vec[0], 0, sizeof (T) * s);
+	}
+
 	void compact()
 	{
 		m_Vec.resize(m_iSize);

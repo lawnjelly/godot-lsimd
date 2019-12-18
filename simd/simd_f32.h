@@ -27,16 +27,15 @@
 
 #include "simd_types.h"
 #include "simd_vector.h"
-#include "core/reference.h"
 #include "core/math/vector3.h"
+#include "core/math/vector2.h"
 #include "core/pool_vector.h"
+#include "core/variant.h"
 
-class FastArray_4f32: public Reference
+class Simd_4f32
 {
-    GDCLASS(FastArray_4f32, Reference);
-
 public:
-	FastArray_4f32();
+	Simd_4f32();
 
 	// sizing
 	void reserve(int size)
@@ -50,7 +49,7 @@ public:
 		m_Vec.resize(size);
 	}
 
-	void copy(Object * pArr2);
+	void copy(const Simd_4f32 &o);
 
 	void copyfrom_poolvector3array(const PoolVector<Vector3> &arr);
 	PoolVector<Vector3> get_poolvector3array() const;
@@ -62,49 +61,60 @@ public:
 	Quat read(int i) const;
 	void write(int i, const Quat &q);
 
+	Vector3 vec3_read(int i) const;
+	void vec3_write(int i, const Vector3 &v);
+
 	void fill(const Quat &val);
 	void zero();
 
 	int size() const {return m_Vec.size();}
 
 	// SIMD
-	void value_add(const Quat &val, int from, int to);
-	void value_subtract(const Quat &val, int from, int to);
-	void value_multiply(const Quat &val, int from, int to);
-	void value_divide(const Quat &val, int from, int to);
+	void value_add(const Quat &val, int from, int num);
+	void value_subtract(const Quat &val, int from, int num);
+	void value_multiply(const Quat &val, int from, int num);
+	void value_divide(const Quat &val, int from, int num);
 
-	void add(Object * pArr2, int from, int to);
-	void subtract(Object * pArr2, int from, int to);
-	void multiply(Object * pArr2, int from, int to);
-	void divide(Object * pArr2, int from, int to);
+	void add(Simd_4f32 &arr2, int from, int from2, int num);
+	void subtract(Simd_4f32 &arr2, int from, int from2, int num);
+	void multiply(Simd_4f32 &arr2, int from, int from2, int num);
+	void divide(Simd_4f32 &arr2, int from, int from2, int num);
 
 	// geometry
-	void vec3_dot(Object * pArr2, int from, int to);
-	void vec3_cross(Object * pArr2, int from, int to);
-	void vec3_unit_cross(Object * pArr2, int from, int to);
-	void vec3_normalize(int from, int to);
+	// vec3
+	void vec3_dot(Simd_4f32 &arr2, int from, int from2, int num);
+	void vec3_cross(Simd_4f32 &arr2, int from, int from2, int num);
+	void vec3_unit_cross(Simd_4f32 &arr2, int from, int from2, int num);
 
-	void vec3_length(int from, int to);
-	void vec3_length_squared(int from, int to);
+	void vec3_normalize(int from, int num);
+	void vec3_length(int from, int num);
+	void vec3_length_squared(int from, int num);
 
-	void vec3_xform(const Transform &tr, int from, int to);
-	void vec3_inv_xform(const Transform &tr, int from, int to);
+	void vec3_xform(const Transform &tr, int from, int num);
+	void vec3_inv_xform(const Transform &tr, int from, int num);
 
-	void sqrt(int from, int to);
-	void inv_sqrt(int from, int to);
-	void reciprocal(int from, int to);
+	// vec2
+	void vec2_dot(Simd_4f32 &arr2, int from, int from2, int num, float * pfResult);
+	void vec2_cross(Simd_4f32 &arr2, int from, int from2, int num, float * pfResult);
 
-	void test(int from, int to);
+	void vec2_length(int from, int num, float * pfResult);
+	void vec2_length_squared(int from, int num, float * pfResult);
+
+	void vec2_normalize(int from, int num);
+
+
+
+	void sqrt(int from, int num);
+	void inv_sqrt(int from, int num);
+	void reciprocal(int from, int num);
+
+	void test(int from, int num);
 
 	String get_cpu_name();
 	String get_cpu_caps(String spacer);
 
-
-protected:
-	static void _bind_methods();
-	
 private:
-	bool check_range(int from, int to) const;
+	bool check_range(int from, int num, int size) const;
 
 public:
 	GSimd::SVector<GSimd::f32_4> m_Vec;
