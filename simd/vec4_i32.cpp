@@ -70,4 +70,15 @@ void Vec4_i32::_bind_methods()
 
 	ClassDB::bind_method(D_METHOD("get_vec3"), &Vec4_i32::get_vec3);
 	ClassDB::bind_method(D_METHOD("set_vec3_round", "xyz"), &Vec4_i32::set_vec3_round);
+
+	ClassDB::bind_method(D_METHOD("add", "value"), &Vec4_i32::add);
+	ClassDB::bind_method(D_METHOD("subtract", "value"), &Vec4_i32::subtract);
+	ClassDB::bind_method(D_METHOD("multiply", "value"), &Vec4_i32::multiply);
+	ClassDB::bind_method(D_METHOD("divide", "value"), &Vec4_i32::divide);
+
+	ClassDB::bind_method(D_METHOD("vec3_length_squared"), &Vec4_i32::vec3_length_squared);
+	ClassDB::bind_method(D_METHOD("vec3_length"), &Vec4_i32::vec3_length);
+
+	ClassDB::bind_method(D_METHOD("vec3_normalize_to_scale", "scale"), &Vec4_i32::vec3_normalize_to_scale);
+
 }

@@ -56,7 +56,32 @@ public:
 	Vector3 get_vec3() const {return Vector3(d.x, d.y, d.z);}
 	void set_vec3_round(const Vector3 &pt) {d.x = Math::round(pt.x); d.y = Math::round(pt.y); d.z = Math::round(pt.z); d.w = 0;}
 
+	// simple maths
+	void add(const Ref<Vec4_i32> &val) {d.add(val->d);}
+	void subtract(const Ref<Vec4_i32> &val) {d.add(val->d);}
+	void multiply(const Ref<Vec4_i32> &val) {d.add(val->d);}
+	void divide(const Ref<Vec4_i32> &val) {d.add(val->d);}
 
+	uint64_t vec3_length_squared() const {return d.vec3_length_squared();}
+	real_t vec3_length() const {return Math::sqrt((real_t) vec3_length_squared());}
+
+	// returns length
+	real_t vec3_normalize_to_scale(real_t scale)
+	{
+		uint64_t sl = vec3_length_squared();
+		if (!sl)
+			return 0.0;
+
+		real_t l = Math::sqrt((real_t) sl);
+		real_t mult = scale / l;
+		d.x = Math::round(d.x * mult);
+		d.y = Math::round(d.y * mult);
+		d.z = Math::round(d.z * mult);
+
+		return l;
+	}
+
+	// casting
 	static Vec4_i32 * safe_cast(Object * pObj);
 	static const Vec4_i32 * safe_cast(const Object * pObj);
 
