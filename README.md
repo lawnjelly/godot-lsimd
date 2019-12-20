@@ -19,6 +19,12 @@ This is an array made up of 4 32bit floats, corresponding to the `__m128` SSE ty
 ## FastArray_2f32
 An array of pairs of 32bit floats, for use with e.g. Vector2. The functions are all ranged Vector2 equivalents.
 
+## FastArray_4i32
+4 32bit integers.
+
+## Vec4_i32
+Simple Vector4 integer class. Can be used for passing values to FastArray_4i32 or for your own use.
+
 # ToDo
 I have started making optional SSE versions of the functions. There is CPU detection code to detect CPU caps at startup, and dynamic dispatch to the fastest path supported by the hardware. The SSE code can be compiled out by switching out defines.
 
