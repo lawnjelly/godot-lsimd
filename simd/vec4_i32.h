@@ -25,40 +25,41 @@
 */
 
 
-#include "core/math/quat.h"
-#include "core/math/transform.h"
-#include "simd_cpu.h"
+#include "type_i32_4.h"
+#include "core/reference.h"
 
-#ifndef float32_t
-#define float32_t float
-#endif
-
-
-// Mostly we will rely on auto-vectorization.
-// However some instructions (e.g. reciprocal sqrt) cannot be autovectorized
-// Note that you seem to need -O3 for autovectorization, and x86_64 has minimum SSE2 support...
-// for x86 you need to explicitly enable it in the compiler with -msse etc.
-
-
-// TODO:
-// Alignment
-
-namespace GSimd
+class Vec4_i32 : public Reference
 {
+	GDCLASS(Vec4_i32, Reference);
+public:
+	Vec4_i32();
+	Vec4_i32(GSimd::i32_4 val);
+	~Vec4_i32();
 
-struct f32_transform
-{
-	float32_t basis[12];
-	float32_t origin[4];
+	GSimd::i32_4 d;
 
-	void from_transform(const Transform &tr);
+	int x() const {return d.x;}
+	int y() const {return d.y;}
+	int z() const {return d.z;}
+	int w() const {return d.w;}
+	int get_tuple(int t) const {return d.v[t];}
 
-	// pre-prepare inversed transform for fast inv_xform (basis and origin is different, see Transform source)
-	void from_transform_inv(const Transform &tr);
+	void set_x(int x) {d.x = x;}
+	void set_y(int y) {d.y = y;}
+	void set_z(int z) {d.z = z;}
+	void set_w(int w) {d.w = w;}
+
+	void set_xyz(int x, int y, int z) {d.x = x; d.y = y; d.z = z; d.w = 0;}
+	void set_xyzw(int x, int y, int z, int w) {d.x = x; d.y = y; d.z = z; d.w = w;}
+	void set_tuple(int n, int val) {d.v[n] = val;}
+
+	Vector3 get_vec3() const {return Vector3(d.x, d.y, d.z);}
+	void set_vec3_round(const Vector3 &pt) {d.x = Math::round(pt.x); d.y = Math::round(pt.y); d.z = Math::round(pt.z); d.w = 0;}
+
+
+	static Vec4_i32 * safe_cast(Object * pObj);
+	static const Vec4_i32 * safe_cast(const Object * pObj);
+
+protected:
+	static void _bind_methods();
 };
-
-
-
-
-
-}

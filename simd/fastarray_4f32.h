@@ -41,8 +41,8 @@ public:
 	// sizing
 	void reserve(int size) {m_Array.reserve(size);}
 	void resize(int size) {	m_Array.resize(size);}
-	void copy(Object * pArr2);
-	void copyfrom_poolvector3array(const PoolVector<Vector3> &arr) {m_Array.copyfrom_poolvector3array(arr);}
+	void copy_from(const Ref<FastArray_4f32> &arr2);
+	void copy_from_poolvector3array(const PoolVector<Vector3> &arr) {m_Array.copy_from_poolvector3array(arr);}
 	PoolVector<Vector3> get_poolvector3array() const {return m_Array.get_poolvector3array();}
 
 	// get the results of operation like length, which are returned as element 3
@@ -66,16 +66,16 @@ public:
 	void value_multiply(const Quat &val, int from, int num) {m_Array.value_multiply(val, from, num);}
 	void value_divide(const Quat &val, int from, int num) {m_Array.value_divide(val, from, num);}
 
-	void add(Object * pArr2, int from, int from2, int num);
-	void subtract(Object * pArr2, int from, int from2, int num);
-	void multiply(Object * pArr2, int from, int from2, int num);
-	void divide(Object * pArr2, int from, int from2, int num);
+	void add(const Ref<FastArray_4f32> &arr2, int from, int from2, int num);
+	void subtract(const Ref<FastArray_4f32> &arr2, int from, int from2, int num);
+	void multiply(const Ref<FastArray_4f32> &arr2, int from, int from2, int num);
+	void divide(const Ref<FastArray_4f32> &arr2, int from, int from2, int num);
 
 	// geometry
 	// vec3
-	void vec3_dot(Object * pArr2, int from, int from2, int num);
-	void vec3_cross(Object * pArr2, int from, int from2, int num);
-	void vec3_unit_cross(Object * pArr2, int from, int from2, int num);
+	void vec3_dot(const Ref<FastArray_4f32> &arr2, int from, int from2, int num);
+	void vec3_cross(const Ref<FastArray_4f32> &arr2, int from, int from2, int num);
+	void vec3_unit_cross(const Ref<FastArray_4f32> &arr2, int from, int from2, int num);
 
 	void vec3_normalize(int from, int num) {m_Array.vec3_normalize(from, num);}
 	void vec3_length(int from, int num) {m_Array.vec3_length(from, num);}

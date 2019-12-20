@@ -35,9 +35,15 @@ void Simd_4f32_SSE3::vec3_length(float * pfUnits, int nUnits)
 	// https://nccastaff.bmth.ac.uk/jmacey/Lectures/SIMD/?home=/jmacey/AProg#/6/18
 	float * pf = pfUnits;
 
+	__m128 mask = _mm_castsi128_ps(_mm_set_epi32(-1, -1, -1, 0));
+
 	for (int n=0; n<nUnits; n++)
 	{
 		__m128 m = _mm_loadu_ps(pf);
+
+		// only interested in xyz
+		m = _mm_and_ps(m, mask);
+
 		__m128 res = _mm_mul_ps(m, m);
 		__m128 sum = _mm_hadd_ps(res, res);
 		__m128 sum2 = _mm_hadd_ps(sum, sum);
@@ -52,9 +58,15 @@ void Simd_4f32_SSE3::vec3_length_squared(float * pfUnits, int nUnits)
 {
 	float * pf = pfUnits;
 
+	__m128 mask = _mm_castsi128_ps(_mm_set_epi32(-1, -1, -1, 0));
+
 	for (int n=0; n<nUnits; n++)
 	{
 		__m128 m = _mm_loadu_ps(pf);
+
+		// only interested in xyz
+		m = _mm_and_ps(m, mask);
+
 		__m128 res = _mm_mul_ps(m, m);
 		__m128 sum = _mm_hadd_ps(res, res);
 		__m128 sum2 = _mm_hadd_ps(sum, sum);

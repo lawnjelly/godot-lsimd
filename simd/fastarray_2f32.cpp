@@ -47,20 +47,17 @@ IMPL_SIMPLE(inv_sqrt, inv_sqrt);
 IMPL_SIMPLE(reciprocal, reciprocal);
 IMPL_SIMPLE(normalize, vec2_normalize);
 
-#define IMPL_DUAL(A) void FastArray_2f32::A(Object * pArr2, int from, int from2, int num)\
+#define IMPL_DUAL(A) void FastArray_2f32::A(const Ref<FastArray_2f32> &arr2, int from, int from2, int num)\
 IMPL_PREPARE \
-FastArray_2f32 * p2 = Object::cast_to<FastArray_2f32>(pArr2);\
-if (!p2)\
-return;\
 int q_from2;\
-unsigned int flags2 = p2->_find_quad_range(from2, num, q_from2, num_quads);\
+unsigned int flags2 = arr2->_find_quad_range(from2, num, q_from2, num_quads);\
 /* they must be in sync or else */ \
 if (flags != flags2)\
 {\
 WARN_PRINT_ONCE("FastArray_2f32 from and from2 must be both odd, or both even");\
 return;\
 }\
-m_Array.A(p2->m_Array, q_from, q_from2, num_quads);\
+m_Array.A(arr2->m_Array, q_from, q_from2, num_quads);\
 IMPL_RESTORE
 
 
@@ -70,15 +67,12 @@ IMPL_DUAL(multiply);
 IMPL_DUAL(divide);
 
 
-#define IMPL_RESULT(A, B) void FastArray_2f32::A(Object * pArr2, int from, int from2, int num) \
+#define IMPL_RESULT(A, B) void FastArray_2f32::A(const Ref<FastArray_2f32> &arr2, int from, int from2, int num) \
 {\
 if (!num) return;\
-FastArray_2f32 * p2 = Object::cast_to<FastArray_2f32>(pArr2);\
-if (!p2)\
-return;\
 int q_from, q_from2, num_quads;\
 unsigned int flags = _find_quad_range(from , num, q_from, num_quads);\
-unsigned int flags2 = p2->_find_quad_range(from2, num, q_from2, num_quads);\
+unsigned int flags2 = arr2->_find_quad_range(from2, num, q_from2, num_quads);\
 /* they must be in sync or else */ \
 if (flags != flags2)\
 {\
@@ -91,7 +85,7 @@ int res_after = from + num;\
 if (flags & RF_BEFORE) {fTempBefore = m_Result[res_before];}\
 if (flags & RF_AFTER) {fTempAfter = m_Result[res_after];}\
 \
-m_Array.B(p2->m_Array, q_from, q_from2, num_quads, &m_Result[q_from * 2]);\
+m_Array.B(arr2->m_Array, q_from, q_from2, num_quads, &m_Result[q_from * 2]);\
 \
 if (flags & RF_BEFORE)\
 {m_Result[res_before] = fTempBefore;}\
@@ -182,6 +176,14 @@ void FastArray_2f32::fill(const Vector2 &v)
 	m_Array.fill(Quat(v.x, v.y, v.x, v.y));
 }
 
+void FastArray_2f32::copy_from(const Ref<FastArray_2f32> &arr2)
+{
+	m_Array.copy_from(arr2->m_Array);
+	m_iSize = arr2->m_iSize;
+	m_Result.resize(arr2->m_Result.size());
+	m_Result.zero();
+}
+
 
 float FastArray_2f32::read_result(int i) const
 {
@@ -224,6 +226,7 @@ void FastArray_2f32::_bind_methods()
 	ClassDB::bind_method(D_METHOD("fill", "value"), &FastArray_2f32::fill);
 	ClassDB::bind_method(D_METHOD("zero"), &FastArray_2f32::zero);
 
+	ClassDB::bind_method(D_METHOD("copy_from", "array2"), &FastArray_2f32::copy_from);
 
 	ClassDB::bind_method(D_METHOD("size"), &FastArray_2f32::size);
 	ClassDB::bind_method(D_METHOD("read", "element"), &FastArray_2f32::read);

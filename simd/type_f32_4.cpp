@@ -1,5 +1,3 @@
-#pragma once
-
 //	Copyright (c) 2019 Lawnjelly
 
 //	Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,45 +18,12 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //	SOFTWARE.
 
-/**
-	@author lawnjelly <lawnjelly@gmail.com>
-*/
-
-
-#include "core/math/quat.h"
-#include "core/math/transform.h"
-#include "simd_cpu.h"
-
-#ifndef float32_t
-#define float32_t float
-#endif
-
-
-// Mostly we will rely on auto-vectorization.
-// However some instructions (e.g. reciprocal sqrt) cannot be autovectorized
-// Note that you seem to need -O3 for autovectorization, and x86_64 has minimum SSE2 support...
-// for x86 you need to explicitly enable it in the compiler with -msse etc.
-
-
-// TODO:
-// Alignment
+#include "type_f32_4.h"
 
 namespace GSimd
 {
 
-struct f32_transform
-{
-	float32_t basis[12];
-	float32_t origin[4];
-
-	void from_transform(const Transform &tr);
-
-	// pre-prepare inversed transform for fast inv_xform (basis and origin is different, see Transform source)
-	void from_transform_inv(const Transform &tr);
-};
 
 
 
-
-
-}
+} // namespace

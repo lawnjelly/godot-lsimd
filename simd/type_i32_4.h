@@ -24,41 +24,54 @@
 	@author lawnjelly <lawnjelly@gmail.com>
 */
 
-
-#include "core/math/quat.h"
-#include "core/math/transform.h"
-#include "simd_cpu.h"
-
-#ifndef float32_t
-#define float32_t float
-#endif
-
-
-// Mostly we will rely on auto-vectorization.
-// However some instructions (e.g. reciprocal sqrt) cannot be autovectorized
-// Note that you seem to need -O3 for autovectorization, and x86_64 has minimum SSE2 support...
-// for x86 you need to explicitly enable it in the compiler with -msse etc.
-
-
-// TODO:
-// Alignment
+#include <cstdint>
+#include "core/math/math_funcs.h"
 
 namespace GSimd
 {
+	struct i32_4
+	{
+		union {
+			struct {int32_t x, y, z, w;};
+			int32_t v[4];
+		};
 
-struct f32_transform
-{
-	float32_t basis[12];
-	float32_t origin[4];
+		void add(const i32_4 &o)
+		{
+			for (int n=0; n<4; n++)
+				v[n] += o.v[n];
+		}
 
-	void from_transform(const Transform &tr);
+		void subtract(const i32_4 &o)
+		{
+			for (int n=0; n<4; n++)
+				v[n] -= o.v[n];
+		}
 
-	// pre-prepare inversed transform for fast inv_xform (basis and origin is different, see Transform source)
-	void from_transform_inv(const Transform &tr);
-};
+		void multiply(const i32_4 &o)
+		{
+			for (int n=0; n<4; n++)
+				v[n] *= o.v[n];
+		}
 
+		void divide(const i32_4 &o)
+		{
+			for (int n=0; n<4; n++)
+				v[n] /= o.v[n];
+		}
 
+		uint64_t vec3_length_squared() const
+		{
+			return ((int64_t) v[0] * v[0]) + ((int64_t) v[1] * v[1]) + ((int64_t) v[2] * v[2]);
+		}
 
+		// calculate length, store result in w
+		void vec3_length()
+		{
+			uint64_t sl = vec3_length_squared();
+			v[3] = (0.5 + Math::sqrt((double) sl)); // include some rounding
+		}
 
-
-}
+	};
+	
+} // namspace

@@ -25,13 +25,18 @@
 
 using namespace GSimd;
 
-#define FA_IMPL_DUAL(A) void FastArray_4f32::A(Object * pArr2, int from, int from2, int num)\
+#define FA_IMPL_DUAL(A) void FastArray_4f32::A(const Ref<FastArray_4f32> &arr2, int from, int from2, int num)\
 {\
+	m_Array.A(arr2->m_Array, from, from2, num);\
+}
+
+/*
 FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);\
 if (!p2)\
 return;\
 m_Array.A(p2->m_Array, from, from2, num);\
 }
+*/
 
 FA_IMPL_DUAL(add);
 FA_IMPL_DUAL(subtract);
@@ -43,17 +48,10 @@ FA_IMPL_DUAL(vec3_cross);
 FA_IMPL_DUAL(vec3_unit_cross);
 
 
-void FastArray_4f32::copy(Object * pArr2)
+void FastArray_4f32::copy_from(const Ref<FastArray_4f32> &arr2)
 {
-	FastArray_4f32 * p2 = Object::cast_to<FastArray_4f32>(pArr2);
-	if (!p2)
-		return; // not the right type
-
-	m_Array.copy(p2->m_Array);
+	m_Array.copy_from(arr2->m_Array);
 }
-
-
-
 
 void FastArray_4f32::_bind_methods()
 {
@@ -63,8 +61,8 @@ void FastArray_4f32::_bind_methods()
 	ClassDB::bind_method(D_METHOD("zero"), &FastArray_4f32::zero);
 
 
-	ClassDB::bind_method(D_METHOD("copy", "Second FastArray_4f32"), &FastArray_4f32::copy);
-	ClassDB::bind_method(D_METHOD("copyfrom_poolvector3array", "array"), &FastArray_4f32::copyfrom_poolvector3array);
+	ClassDB::bind_method(D_METHOD("copy_from", "array2"), &FastArray_4f32::copy_from);
+	ClassDB::bind_method(D_METHOD("copy_from_poolvector3array", "array"), &FastArray_4f32::copy_from_poolvector3array);
 	ClassDB::bind_method(D_METHOD("get_poolvector3array"), &FastArray_4f32::get_poolvector3array);
 	ClassDB::bind_method(D_METHOD("get_poolrealarray_result"), &FastArray_4f32::get_poolrealarray_result);
 

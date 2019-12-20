@@ -41,6 +41,8 @@ public:
 	void fill(const Vector2 &v);
 	void zero() {m_Array.zero();}
 
+	void copy_from(const Ref<FastArray_2f32> &arr2);
+
 	Vector2 read(int i) const;
 	void write(int i, const Vector2 &v);
 
@@ -55,13 +57,13 @@ public:
 	void inv_sqrt(int from, int num);
 	void reciprocal(int from, int num);
 
-	void add(Object * pArr2, int from, int from2, int num);
-	void subtract(Object * pArr2, int from, int from2, int num);
-	void multiply(Object * pArr2, int from, int from2, int num);
-	void divide(Object * pArr2, int from, int from2, int num);
+	void add(const Ref<FastArray_2f32> &arr2, int from, int from2, int num);
+	void subtract(const Ref<FastArray_2f32> &arr2, int from, int from2, int num);
+	void multiply(const Ref<FastArray_2f32> &arr2, int from, int from2, int num);
+	void divide(const Ref<FastArray_2f32> &arr2, int from, int from2, int num);
 
-	void dot(Object * pArr2, int from, int from2, int num);
-	void cross(Object * pArr2, int from, int from2, int num);
+	void dot(const Ref<FastArray_2f32> &arr2, int from, int from2, int num);
+	void cross(const Ref<FastArray_2f32> &arr2, int from, int from2, int num);
 
 	void normalize(int from, int num);
 	void length(int from, int num);

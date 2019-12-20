@@ -25,7 +25,7 @@
 */
 
 
-#include "simd_types.h"
+#include "type_f32_4.h"
 #include "simd_vector.h"
 #include "core/math/vector3.h"
 #include "core/math/vector2.h"
@@ -49,9 +49,9 @@ public:
 		m_Vec.resize(size);
 	}
 
-	void copy(const Simd_4f32 &o);
+	void copy_from(const Simd_4f32 &o);
 
-	void copyfrom_poolvector3array(const PoolVector<Vector3> &arr);
+	void copy_from_poolvector3array(const PoolVector<Vector3> &arr);
 	PoolVector<Vector3> get_poolvector3array() const;
 
 	// get the results of operation like length, which are returned as element 3
@@ -75,16 +75,16 @@ public:
 	void value_multiply(const Quat &val, int from, int num);
 	void value_divide(const Quat &val, int from, int num);
 
-	void add(Simd_4f32 &arr2, int from, int from2, int num);
-	void subtract(Simd_4f32 &arr2, int from, int from2, int num);
-	void multiply(Simd_4f32 &arr2, int from, int from2, int num);
-	void divide(Simd_4f32 &arr2, int from, int from2, int num);
+	void add(const Simd_4f32 &arr2, int from, int from2, int num);
+	void subtract(const Simd_4f32 &arr2, int from, int from2, int num);
+	void multiply(const Simd_4f32 &arr2, int from, int from2, int num);
+	void divide(const Simd_4f32 &arr2, int from, int from2, int num);
 
 	// geometry
 	// vec3
-	void vec3_dot(Simd_4f32 &arr2, int from, int from2, int num);
-	void vec3_cross(Simd_4f32 &arr2, int from, int from2, int num);
-	void vec3_unit_cross(Simd_4f32 &arr2, int from, int from2, int num);
+	void vec3_dot(const Simd_4f32 &arr2, int from, int from2, int num);
+	void vec3_cross(const Simd_4f32 &arr2, int from, int from2, int num);
+	void vec3_unit_cross(const Simd_4f32 &arr2, int from, int from2, int num);
 
 	void vec3_normalize(int from, int num);
 	void vec3_length(int from, int num);
@@ -94,8 +94,8 @@ public:
 	void vec3_inv_xform(const Transform &tr, int from, int num);
 
 	// vec2
-	void vec2_dot(Simd_4f32 &arr2, int from, int from2, int num, float * pfResult);
-	void vec2_cross(Simd_4f32 &arr2, int from, int from2, int num, float * pfResult);
+	void vec2_dot(const Simd_4f32 &arr2, int from, int from2, int num, float * pfResult);
+	void vec2_cross(const Simd_4f32 &arr2, int from, int from2, int num, float * pfResult);
 
 	void vec2_length(int from, int num, float * pfResult);
 	void vec2_length_squared(int from, int num, float * pfResult);

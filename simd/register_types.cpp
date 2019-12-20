@@ -5,11 +5,15 @@
 #include "core/class_db.h"
 #include "fastarray_4f32.h"
 #include "fastarray_2f32.h"
+#include "fastarray_4i32.h"
+#include "vec4_i32.h"
 
 
 void register_simd_types() {
 	ClassDB::register_class<FastArray_4f32>();
 	ClassDB::register_class<FastArray_2f32>();
+	ClassDB::register_class<FastArray_4i32>();
+	ClassDB::register_class<Vec4_i32>();
 }
 
 void unregister_simd_types() {

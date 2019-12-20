@@ -162,7 +162,7 @@ PoolVector<Vector3> Simd_4f32::get_poolvector3array() const
 }
 
 
-void Simd_4f32::copyfrom_poolvector3array(const PoolVector<Vector3> &arr)
+void Simd_4f32::copy_from_poolvector3array(const PoolVector<Vector3> &arr)
 {
 	int size = arr.size();
 
@@ -181,7 +181,7 @@ void Simd_4f32::copyfrom_poolvector3array(const PoolVector<Vector3> &arr)
 	}
 }
 
-void Simd_4f32::copy(const Simd_4f32 &o)
+void Simd_4f32::copy_from(const Simd_4f32 &o)
 {
 	int size = o.size();
 	if (size == 0)
@@ -196,7 +196,7 @@ void Simd_4f32::copy(const Simd_4f32 &o)
 }
 
 
-void Simd_4f32::add(Simd_4f32 &arr2, int from, int from2, int num)
+void Simd_4f32::add(const Simd_4f32 &arr2, int from, int from2, int num)
 {
 	int to = from + num;
 	GSIMD_CHECK_BOTH_RANGE
@@ -211,7 +211,7 @@ void Simd_4f32::add(Simd_4f32 &arr2, int from, int from2, int num)
 		m_Vec[n].add(arr2.m_Vec[from2++]);
 }
 
-void Simd_4f32::subtract(Simd_4f32 &arr2, int from, int from2, int num)
+void Simd_4f32::subtract(const Simd_4f32 &arr2, int from, int from2, int num)
 {
 	int to = from + num;
 	GSIMD_CHECK_BOTH_RANGE
@@ -226,7 +226,7 @@ void Simd_4f32::subtract(Simd_4f32 &arr2, int from, int from2, int num)
 		m_Vec[n].subtract(arr2.m_Vec[from2++]);
 }
 
-void Simd_4f32::multiply(Simd_4f32 &arr2, int from, int from2, int num)
+void Simd_4f32::multiply(const Simd_4f32 &arr2, int from, int from2, int num)
 {
 	int to = from + num;
 	GSIMD_CHECK_BOTH_RANGE
@@ -241,7 +241,7 @@ void Simd_4f32::multiply(Simd_4f32 &arr2, int from, int from2, int num)
 		m_Vec[n].multiply(arr2.m_Vec[from2++]);
 }
 
-void Simd_4f32::divide(Simd_4f32 &arr2, int from, int from2, int num)
+void Simd_4f32::divide(const Simd_4f32 &arr2, int from, int from2, int num)
 {
 	int to = from + num;
 	GSIMD_CHECK_BOTH_RANGE
@@ -256,7 +256,7 @@ void Simd_4f32::divide(Simd_4f32 &arr2, int from, int from2, int num)
 		m_Vec[n].divide(arr2.m_Vec[from2++]);
 }
 
-void Simd_4f32::vec2_dot(Simd_4f32 &arr2, int from, int from2, int num, float * pfResult)
+void Simd_4f32::vec2_dot(const Simd_4f32 &arr2, int from, int from2, int num, float * pfResult)
 {
 	int to = from + num;
 	GSIMD_CHECK_BOTH_RANGE
@@ -268,7 +268,7 @@ void Simd_4f32::vec2_dot(Simd_4f32 &arr2, int from, int from2, int num, float * 
 	}
 }
 
-void Simd_4f32::vec2_cross(Simd_4f32 &arr2, int from, int from2, int num, float * pfResult)
+void Simd_4f32::vec2_cross(const Simd_4f32 &arr2, int from, int from2, int num, float * pfResult)
 {
 	int to = from + num;
 	GSIMD_CHECK_BOTH_RANGE
@@ -303,7 +303,7 @@ void Simd_4f32::vec2_length_squared(int from, int num, float * pfResult)
 }
 
 
-void Simd_4f32::vec3_dot(Simd_4f32 &arr2, int from, int from2, int num)
+void Simd_4f32::vec3_dot(const Simd_4f32 &arr2, int from, int from2, int num)
 {
 	int to = from + num;
 	GSIMD_CHECK_BOTH_RANGE
@@ -319,7 +319,7 @@ void Simd_4f32::vec3_dot(Simd_4f32 &arr2, int from, int from2, int num)
 		m_Vec[n].vec3_dot(arr2.m_Vec[from2++]);
 }
 
-void Simd_4f32::vec3_unit_cross(Simd_4f32 &arr2, int from, int from2, int num)
+void Simd_4f32::vec3_unit_cross(const Simd_4f32 &arr2, int from, int from2, int num)
 {
 	int to = from + num;
 	GSIMD_CHECK_BOTH_RANGE
@@ -332,7 +332,7 @@ void Simd_4f32::vec3_unit_cross(Simd_4f32 &arr2, int from, int from2, int num)
 
 }
 
-void Simd_4f32::vec3_cross(Simd_4f32 &arr2, int from, int from2, int num)
+void Simd_4f32::vec3_cross(const Simd_4f32 &arr2, int from, int from2, int num)
 {
 	int to = from + num;
 	GSIMD_CHECK_BOTH_RANGE
