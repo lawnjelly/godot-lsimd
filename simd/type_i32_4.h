@@ -72,6 +72,32 @@ namespace GSimd
 			v[3] = (0.5 + Math::sqrt((double) sl)); // include some rounding
 		}
 
+		int64_t vec3_dot(const i32_4 &o) const
+		{
+			int64_t r = 0;
+			for (int n=0; n<3; n++)
+				r += v[n] * o.v[n];
+			return r;
+		}
+
+		int64_t dot(const i32_4 &o) const
+		{
+			int64_t r = 0;
+			for (int n=0; n<4; n++)
+				r += v[n] * o.v[n];
+			return r;
+		}
+
+		void vec3_cross(const i32_4 &o)
+		{
+			i32_4 r;
+			r.x = (y * o.z) - (z * o.y);
+			r.y = (z * o.x) - (x * o.z);
+			r.z = (x * o.y) - (y * o.x);
+			r.w = 0;
+			*this = r;
+		}
+
 	};
 	
 } // namspace

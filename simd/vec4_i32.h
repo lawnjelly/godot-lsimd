@@ -53,14 +53,20 @@ public:
 	void set_xyzw(int x, int y, int z, int w) {d.x = x; d.y = y; d.z = z; d.w = w;}
 	void set_tuple(int n, int val) {d.v[n] = val;}
 
+	void copy_from(const Ref<Vec4_i32> &val) {for (int n=0; n<4; n++) {d.v[n] = val->d.v[n];}}
+
 	Vector3 get_vec3() const {return Vector3(d.x, d.y, d.z);}
 	void set_vec3_round(const Vector3 &pt) {d.x = Math::round(pt.x); d.y = Math::round(pt.y); d.z = Math::round(pt.z); d.w = 0;}
+
+	bool vec3_equals(const Ref<Vec4_i32> &val) const {return (d.x == val->d.x) && (d.y == val->d.y) && (d.z == val->d.z);}
+	bool equals(const Ref<Vec4_i32> &val) const {return (d.x == val->d.x) && (d.y == val->d.y) && (d.z == val->d.z) && (d.w == val->d.w);}
 
 	// simple maths
 	void add(const Ref<Vec4_i32> &val) {d.add(val->d);}
 	void subtract(const Ref<Vec4_i32> &val) {d.add(val->d);}
 	void multiply(const Ref<Vec4_i32> &val) {d.add(val->d);}
 	void divide(const Ref<Vec4_i32> &val) {d.add(val->d);}
+
 
 	uint64_t vec3_length_squared() const {return d.vec3_length_squared();}
 	real_t vec3_length() const {return Math::sqrt((real_t) vec3_length_squared());}
@@ -80,6 +86,11 @@ public:
 
 		return l;
 	}
+
+
+	int64_t vec3_dot(const Ref<Vec4_i32> &val) const {return d.vec3_dot(val->d);}
+	int64_t dot(const Ref<Vec4_i32> &val) const {return d.dot(val->d);}
+	void vec3_cross(const Ref<Vec4_i32> &val) {d.vec3_cross(val->d);}
 
 	// casting
 	static Vec4_i32 * safe_cast(Object * pObj);
