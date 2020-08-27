@@ -1,5 +1,7 @@
 # godot-simd
-Godot module adding support for SIMD instructions from gdscript etc.
+* Version 0.10
+* Godot module adding support for SIMD instructions from gdscript etc.
+* See https://github.com/lawnjelly/godot-titan for pre-compiled builds
 
 # About
 This is a proof of concept module for high performance coding from gdscript and other scripting languages.
