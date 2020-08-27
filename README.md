@@ -1,4 +1,4 @@
-# godot-simd
+# godot-lsimd
 * Version 0.10
 * Godot module adding support for SIMD instructions from gdscript etc.
 * See https://github.com/lawnjelly/godot-titan for pre-compiled builds
